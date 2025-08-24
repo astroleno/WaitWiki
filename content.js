@@ -16,29 +16,77 @@
 
 class WaitWiki {
   constructor() {
-    this.isShowingCard = false;
-    this.isLoadingCard = false;
-    this.conversationState = 'idle'; // 'idle' | 'generating'
-    this.knowledgeCards = [];
-    this.lastCardIndex = -1;
-    this.settings = { 
-      enabled: true, 
-      showSourceInfo: true, 
-      showIcon: true, 
-      darkMode: false, 
-      cardSize: 'medium', 
-      displayDuration: '10',
+    // 基础配置
+    this.settings = {
+      enabled: true,
+      showSourceInfo: true,
+      showIcon: true,
+      darkMode: false,
+      cardSize: 'medium',
       language: 'zh',
-      contentTypes: ['wikipedia', 'quotes', 'facts', 'advice', 'catfacts', 'trivia', 'cocktails', 'datafacts']
+      contentTypes: ['wikipedia', 'quotes', 'facts', 'advice', 'catfacts', 'trivia', 'cocktails', 'datafacts'],
+      displayDuration: '10'
     };
-    this.ui = {}; // Will be populated by createUI
+
+    // 缓存配置
+    this.maxCacheSize = 300;
+    this.cachedCards = new Map();
+    this.globalCacheKey = 'waitwiki_global_cache_v1';
     
-    // 定时器管理
+    // 防重复机制
+    this.lastCardIndex = -1;
+    this.recentCards = new Set();
+    this.maxRecentCards = 50;
+    this.recentContents = new Set();
+    this.maxRecentContents = 50;
+    
+    // 批量更新配置
+    this.batchUpdateConfig = {
+      clickCount: 0,
+      batchSize: 15, // 从10次改为15次，减少更新频率
+      wikipediaTarget: 80,
+      otherTarget: 8,
+      lastBatchUpdate: 0,
+      batchUpdateInterval: 60000 // 60秒间隔（从30秒改为60秒）
+    };
+    
+    // 定时更新配置
+    this.periodicUpdateConfig = {
+      enabled: true,
+      interval: 180000, // 3分钟间隔（从30秒改为3分钟，减少API调用频率）
+      minCacheThreshold: 50, // 缓存低于50时开始定时更新（从30改为50）
+      maxCacheThreshold: 250, // 缓存高于250时停止定时更新
+      updateTimer: null,
+      lastPeriodicUpdate: 0,
+      apiCallDelay: 2000 // API调用间隔2秒，避免并发请求
+    };
+    
+    // 性能统计
+    this.performanceStats = {
+      totalCardsFetched: 0,
+      apiCallCount: 0,
+      cacheHitRate: 0,
+      averageLoadTime: 0
+    };
+    
+    // 用户统计
+    this.userStats = {
+      cardDisplayCount: 0,
+      userPreferences: new Map()
+    };
+    
+    // 对话状态
+    this.conversationState = 'idle';
+    this.isShowingCard = false;
     this.hideTimer = null;
     
-    // 防重复显示管理
-    this.recentCards = new Set(); // 存储最近显示的卡片标题
-    this.maxRecentCards = 20; // 最多记住20张卡片
+    // UI元素
+    this.ui = {
+      container: null,
+      content: null,
+      source: null,
+      icon: null
+    };
     
     // 重试机制配置
     this.retryConfig = {
@@ -62,38 +110,6 @@ class WaitWiki {
       UNKNOWN: 'unknown'
     };
     
-    // 全局知识卡片缓存池
-    this.globalCacheKey = 'waitwiki_global_cache_v1';
-    this.cachedCards = new Map(); // 内存缓存
-    this.cacheStats = { hits: 0, misses: 0, failures: 0 };
-    
-    // 性能监控统计
-    this.performanceStats = {
-      apiCallCount: 0,
-      apiSuccessCount: 0,
-      apiFailureCount: 0,
-      averageResponseTime: 0,
-      totalResponseTime: 0,
-      lastResetTime: Date.now()
-    };
-    
-    // 用户体验统计
-    this.userStats = {
-      cardDisplayCount: 0,
-      userInteractions: 0,
-      favoriteContentTypes: new Map(),
-      sessionStartTime: Date.now()
-    };
-    
-    // 批量更新配置
-    this.batchUpdateConfig = {
-      clickCount: 0,
-      batchSize: 10, // 每10次点击批量更新10条
-      wikipediaTarget: 60, // Wikipedia目标数量
-      otherTarget: 8, // 其他类型每种8条
-      lastBatchUpdate: 0
-    };
-    
     // 本地备用内容库（减少API依赖）
     this.localContent = {
       quotes: [
@@ -104,7 +120,33 @@ class WaitWiki {
         { title: '每日名言', content: '时间就是金钱。', source: '富兰克林', type: 'quotes' },
         { title: '每日名言', content: '成功不是偶然的，而是必然的。', source: '爱默生', type: 'quotes' },
         { title: '每日名言', content: '人生就像一面镜子，你对它笑，它就对你笑。', source: '萨克雷', type: 'quotes' },
-        { title: '每日名言', content: '最困难的时候，也是离成功最近的时候。', source: '居里夫人', type: 'quotes' }
+        { title: '每日名言', content: '最困难的时候，也是离成功最近的时候。', source: '居里夫人', type: 'quotes' },
+        { title: '每日名言', content: '天才就是百分之一的灵感加上百分之九十九的汗水。', source: '爱迪生', type: 'quotes' },
+        { title: '每日名言', content: '不要等待机会，而要创造机会。', source: '乔治·萧伯纳', type: 'quotes' },
+        { title: '每日名言', content: '一个人的价值，应该看他贡献什么，而不应当看他取得什么。', source: '爱因斯坦', type: 'quotes' },
+        { title: '每日名言', content: '生活就像一盒巧克力，你永远不知道下一颗是什么味道。', source: '阿甘正传', type: 'quotes' },
+        { title: '每日名言', content: '与其用华丽的外衣装饰自己，不如用知识充实自己。', source: '莎士比亚', type: 'quotes' },
+        { title: '每日名言', content: '成功的关键在于相信自己有能力成功。', source: '罗伯特·舒勒', type: 'quotes' },
+        { title: '每日名言', content: '最大的骄傲于最大的自卑都表示心灵的最软弱无力。', source: '斯宾诺莎', type: 'quotes' },
+        { title: '每日名言', content: '人生不是一支短短的蜡烛，而是一支由我们暂时拿着的火炬。', source: '萧伯纳', type: 'quotes' },
+        { title: '每日名言', content: '理想的人物不仅要在物质需要的满足上，还要在精神旨趣的满足上得到表现。', source: '黑格尔', type: 'quotes' },
+        { title: '每日名言', content: '一个人的真正伟大之处就在于他能够认识到自己的渺小。', source: '保罗', type: 'quotes' },
+        { title: '每日名言', content: '青春是一个短暂的美梦，当你醒来时，它早已消失无踪。', source: '莎士比亚', type: 'quotes' },
+        { title: '每日名言', content: '友谊是一棵可以庇荫的树。', source: '柯尔律治', type: 'quotes' },
+        { title: '每日名言', content: '真正的友谊，是一株成长缓慢的植物。', source: '华盛顿', type: 'quotes' },
+        { title: '每日名言', content: '友谊是灵魂的结合，这个结合是可以离异的，这是两个敏感，正直的人之间心照不宣的契约。', source: '伏尔泰', type: 'quotes' },
+        { title: '每日名言', content: '友谊像清晨的雾一样纯洁，奉承并不能得到友谊，友谊只能用忠实去巩固它。', source: '马克思', type: 'quotes' },
+        { title: '每日名言', content: '友谊是培养人的感情的学校。', source: '苏霍姆林斯基', type: 'quotes' },
+        { title: '每日名言', content: '友谊是天地间最可宝贵的东西，深挚的友谊是人生最大的一种安慰。', source: '邹韬奋', type: 'quotes' },
+        { title: '每日名言', content: '友谊是两颗心真诚相待，而不是一颗心对另一颗心的敲打。', source: '鲁迅', type: 'quotes' },
+        { title: '每日名言', content: '友谊是人生的调味品，也是人生的止痛药。', source: '爱默生', type: 'quotes' },
+        { title: '每日名言', content: '友谊是精神的融合，心灵的联姻，道德的纽结。', source: '佩恩', type: 'quotes' },
+        { title: '每日名言', content: '友谊是不会有感情的破产和快乐的幻灭的。', source: '巴尔扎克', type: 'quotes' },
+        { title: '每日名言', content: '友谊是培养人的感情的学校。我们所以需要友谊，并不是想用它打发时间，而是要在人身上，在自己的身上培养美德。', source: '苏霍姆林斯基', type: 'quotes' },
+        { title: '每日名言', content: '友谊是人生的调味品，也是人生的止痛药。', source: '爱默生', type: 'quotes' },
+        { title: '每日名言', content: '友谊是精神的融合，心灵的联姻，道德的纽结。', source: '佩恩', type: 'quotes' },
+        { title: '每日名言', content: '友谊是不会有感情的破产和快乐的幻灭的。', source: '巴尔扎克', type: 'quotes' },
+        { title: '每日名言', content: '友谊是培养人的感情的学校。我们所以需要友谊，并不是想用它打发时间，而是要在人身上，在自己的身上培养美德。', source: '苏霍姆林斯基', type: 'quotes' }
       ],
       facts: [
         { title: '数字趣闻', content: '人体大约有206块骨头，但婴儿出生时有300多块骨头。', source: '人体科学', type: 'facts' },
@@ -282,6 +324,14 @@ class WaitWiki {
     
     // 预加载本地内容到缓存
     this.preloadLocalContent();
+    
+    // 启动定时更新机制
+    this.startPeriodicUpdate();
+    
+    // 强制预加载更多内容，确保内容丰富度
+    setTimeout(() => {
+      this.forcePreloadMoreContent();
+    }, 2000);
   }
 
   detectPlatform() {
@@ -361,8 +411,8 @@ class WaitWiki {
       const cacheData = {};
       let savedCount = 0;
       
-      // 限制缓存大小，只保存最近的100张卡片
-      const maxCacheSize = 100;
+      // 限制缓存大小，只保存最近的300张卡片
+      const maxCacheSize = 300;
       const entries = Array.from(this.cachedCards.entries()).slice(-maxCacheSize);
       
       for (const [key, card] of entries) {
@@ -499,13 +549,27 @@ class WaitWiki {
     this.currentCard = null; // 清除当前卡片
     this.showCard(true); // 强制显示新卡片
     
-    // 检查是否需要批量更新
-    if (this.batchUpdateConfig.clickCount >= this.batchUpdateConfig.batchSize) {
+    // 检查缓存状态和更新条件
+    const cacheSize = this.cachedCards.size;
+    const isCacheFull = cacheSize >= this.periodicUpdateConfig.maxCacheThreshold;
+    
+    // 缓存满后的批量更新逻辑
+    if (isCacheFull && this.batchUpdateConfig.clickCount >= this.batchUpdateConfig.batchSize) {
+      console.log(`Cache is full (${cacheSize}), triggering batch update after ${this.batchUpdateConfig.clickCount} clicks`);
       this.performBatchUpdate();
       this.batchUpdateConfig.clickCount = 0; // 重置计数
-    } else {
-      // 每次显示popup时，预加载一张新卡片到缓存
+    } 
+    // 缓存未满时的更新逻辑
+    else if (!isCacheFull) {
+      // 每次点击都预加载一张新卡片
       this.preloadOneMoreCard();
+      
+      // 如果点击次数达到阈值，触发批量更新
+      if (this.batchUpdateConfig.clickCount >= this.batchUpdateConfig.batchSize) {
+        console.log(`Cache not full (${cacheSize}), triggering batch update after ${this.batchUpdateConfig.clickCount} clicks`);
+        this.performBatchUpdate();
+        this.batchUpdateConfig.clickCount = 0; // 重置计数
+      }
     }
     
     // 根据设置决定是否自动隐藏
@@ -735,8 +799,8 @@ class WaitWiki {
       
       this.knowledgeCards = successfulResults.flat().filter(card => card && card.title);
       
-      // 如果缓存中卡片不足30张，开始预加载
-      if (this.cachedCards.size < 30) {
+      // 如果缓存中卡片不足50张，开始预加载
+      if (this.cachedCards.size < 50) {
         this.startSmartPreload();
       }
     } catch (error) {
@@ -752,12 +816,12 @@ class WaitWiki {
     
     const cacheKey = `${type}_${Date.now()}`;
     
-    // 检查缓存
+    // 检查缓存（但允许获取新内容）
     if (this.cachedCards.size > 0) {
       const cachedCards = Array.from(this.cachedCards.values()).filter(card => card.type === type);
       if (cachedCards.length > 0) {
         this.cacheStats.hits++;
-        return cachedCards;
+        // 不直接返回，继续获取新内容
       }
     }
     
@@ -766,40 +830,45 @@ class WaitWiki {
     try {
       let cards = [];
       
-      // 优先尝试API获取
-      try {
-        switch (type) {
-          case 'wikipedia':
-            cards = await this.fetchWikipediaCards();
-            break;
-          case 'quotes':
-            cards = await this.fetchQuoteCards();
-            break;
-          case 'facts':
-            cards = await this.fetchFactCards();
-            break;
-          case 'advice':
-            cards = await this.fetchAdviceCards();
-            break;
-          case 'catfacts':
-            cards = await this.fetchCatFactCards();
-            break;
-          case 'trivia':
-            cards = await this.fetchTriviaCards();
-            break;
-          case 'cocktails':
-            cards = await this.fetchCocktailCards();
-            break;
-          case 'datafacts':
-            cards = await this.fetchDataFactCards();
-            break;
-          default:
-            break;
+      // 优先使用本地内容，减少API依赖
+      cards = this.getLocalContent(type);
+      
+      // 如果本地内容不足，尝试API获取
+      if (!cards || cards.length === 0) {
+        try {
+          switch (type) {
+            case 'wikipedia':
+              cards = await this.fetchWikipediaCards();
+              break;
+            case 'quotes':
+              cards = await this.fetchQuoteCards();
+              break;
+            case 'facts':
+              cards = await this.fetchFactCards();
+              break;
+            case 'advice':
+              cards = await this.fetchAdviceCards();
+              break;
+            case 'catfacts':
+              cards = await this.fetchCatFactCards();
+              break;
+            case 'trivia':
+              cards = await this.fetchTriviaCards();
+              break;
+            case 'cocktails':
+              cards = await this.fetchCocktailCards();
+              break;
+            case 'datafacts':
+              cards = await this.fetchDataFactCards();
+              break;
+            default:
+              break;
+          }
+        } catch (apiError) {
+          console.warn(`API failed for ${type}, using local content:`, apiError);
+          // API失败时使用本地内容
+          cards = this.getLocalContent(type);
         }
-      } catch (apiError) {
-        console.warn(`API failed for ${type}, using local content:`, apiError);
-        // API失败时使用本地内容
-        cards = this.getLocalContent(type);
       }
       
       // 如果API和本地内容都没有，返回空数组
@@ -845,16 +914,12 @@ class WaitWiki {
       return [];
     }
     
-    // 随机选择一张本地卡片
-    const randomIndex = Math.floor(Math.random() * localCards.length);
-    const card = localCards[randomIndex];
-    
-    // 添加语言设置
-    return [{
+    // 返回所有本地卡片，增加内容多样性
+    return localCards.map(card => ({
       ...card,
       language: this.settings.language,
       url: ''
-    }];
+    }));
   }
 
   // 直接从API获取新卡片（不使用缓存）
@@ -1236,8 +1301,8 @@ class WaitWiki {
   // 从CSV文件加载数据真相
   async loadDataFactsFromCSV() {
     try {
-      // 尝试从扩展的data目录加载CSV文件
-      const csvUrl = chrome.runtime.getURL('data/datafacts_complete.csv');
+      // 尝试从扩展根目录加载CSV文件
+      const csvUrl = chrome.runtime.getURL('datafacts.csv');
       const response = await fetch(csvUrl);
       
       if (!response.ok) {
@@ -1297,7 +1362,7 @@ class WaitWiki {
     
     // 优先预加载Wikipedia（如果数量不足）
     const wikipediaCount = typeCounts.get('wikipedia') || 0;
-    if (wikipediaCount < 20) { // 如果Wikipedia少于20条，优先预加载
+    if (wikipediaCount < 30) { // 如果Wikipedia少于30条，优先预加载
       console.log(`Preloading Wikipedia (current: ${wikipediaCount})`);
       try {
         await this.fetchWikipediaCards();
@@ -1315,7 +1380,7 @@ class WaitWiki {
     // 每次只预加载一张卡片，间隔更长时间
     let loadIndex = 0;
     const loadNext = async () => {
-      if (loadIndex >= 3) { // 减少预加载数量，避免过度请求
+      if (loadIndex >= 5) { // 增加预加载数量，确保内容丰富度
         return;
       }
       
@@ -1324,7 +1389,7 @@ class WaitWiki {
         const typeToLoad = loadIndex === 0 ? recommendedType : 
           availableTypes[Math.floor(Math.random() * availableTypes.length)];
         
-        await this.fetchKnowledgeCard(typeToLoad);
+        await this.fetchNewCardFromAPI(typeToLoad);
         loadIndex++;
         
         // 根据网络状况调整间隔时间
@@ -1441,8 +1506,8 @@ class WaitWiki {
       return;
     }
     
-    // 过滤掉最近显示过的卡片（增加内容去重）
-    const filteredCards = availableCards.filter(card => {
+    // 智能过滤：优先选择未显示过的卡片
+    let filteredCards = availableCards.filter(card => {
       // 标题去重
       const titleNotRecent = !this.recentCards.has(card.title);
       
@@ -1455,12 +1520,79 @@ class WaitWiki {
       return titleNotRecent && indexNotRecent && contentNotSimilar;
     });
     
-    // 如果过滤后没有卡片，清空记录重新开始
-    const cardsToChooseFrom = filteredCards.length > 0 ? filteredCards : availableCards;
+    // 如果过滤后卡片太少，放宽过滤条件
+    if (filteredCards.length < Math.min(5, availableCards.length * 0.3)) {
+      console.log('Filtered cards too few, relaxing conditions');
+      filteredCards = availableCards.filter(card => {
+        // 只保留标题去重
+        const titleNotRecent = !this.recentCards.has(card.title);
+        return titleNotRecent;
+      });
+    }
     
-    // 随机选择
-    const newIndex = Math.floor(Math.random() * cardsToChooseFrom.length);
-    this.currentCard = cardsToChooseFrom[newIndex];
+    // 如果还是没有足够卡片，清空记录重新开始
+    if (filteredCards.length === 0) {
+      console.log('No filtered cards available, clearing recent records');
+      this.recentCards.clear();
+      this.recentContents.clear();
+      filteredCards = availableCards;
+    }
+    
+    // 优先选择Wikipedia和数据真相内容（增加出现占比）
+    const priorityTypes = ['wikipedia', 'datafacts'];
+    const priorityCards = filteredCards.filter(card => priorityTypes.includes(card.type));
+    const otherCards = filteredCards.filter(card => !priorityTypes.includes(card.type));
+    
+    // 70%概率选择优先类型，30%概率选择其他类型
+    let selectedCard;
+    if (priorityCards.length > 0 && Math.random() < 0.7) {
+      // 在优先类型中，Wikipedia占60%，datafacts占40%
+      const wikipediaCards = priorityCards.filter(card => card.type === 'wikipedia');
+      const datafactsCards = priorityCards.filter(card => card.type === 'datafacts');
+      
+      if (wikipediaCards.length > 0 && datafactsCards.length > 0) {
+        // 两种类型都有，按比例选择
+        selectedCard = Math.random() < 0.6 ? 
+          wikipediaCards[Math.floor(Math.random() * wikipediaCards.length)] :
+          datafactsCards[Math.floor(Math.random() * datafactsCards.length)];
+      } else if (wikipediaCards.length > 0) {
+        selectedCard = wikipediaCards[Math.floor(Math.random() * wikipediaCards.length)];
+      } else if (datafactsCards.length > 0) {
+        selectedCard = datafactsCards[Math.floor(Math.random() * datafactsCards.length)];
+      } else {
+        selectedCard = priorityCards[Math.floor(Math.random() * priorityCards.length)];
+      }
+    } else if (otherCards.length > 0) {
+      // 选择其他类型，但给不同类型的内容加权
+      const typeCounts = new Map();
+      otherCards.forEach(card => {
+        typeCounts.set(card.type, (typeCounts.get(card.type) || 0) + 1);
+      });
+      
+      const weights = otherCards.map(card => {
+        const typeCount = typeCounts.get(card.type) || 1;
+        return 1 / typeCount; // 类型数量越少，权重越高
+      });
+      
+      const totalWeight = weights.reduce((sum, weight) => sum + weight, 0);
+      let randomWeight = Math.random() * totalWeight;
+      
+      let selectedIndex = 0;
+      for (let i = 0; i < weights.length; i++) {
+        randomWeight -= weights[i];
+        if (randomWeight <= 0) {
+          selectedIndex = i;
+          break;
+        }
+      }
+      
+      selectedCard = otherCards[selectedIndex];
+    } else {
+      // 如果没有其他类型，从优先类型中选择
+      selectedCard = priorityCards[Math.floor(Math.random() * priorityCards.length)];
+    }
+    
+    this.currentCard = selectedCard;
     
     // 更新lastCardIndex为在原数组中的位置
     this.lastCardIndex = availableCards.indexOf(this.currentCard);
@@ -1468,11 +1600,7 @@ class WaitWiki {
     // 添加到最近显示记录
     this.addToRecentCards(this.currentCard.title);
     
-    // 如果过滤后的卡片用完了，清空记录
-    if (filteredCards.length === 0) {
-      this.recentCards.clear();
-      this.recentContents.clear();
-    }
+    console.log(`Selected card: ${this.currentCard.title} (${this.currentCard.type}) - Priority selection`);
   }
   
   // 检查内容相似度
@@ -1491,7 +1619,7 @@ class WaitWiki {
     this.recentContents.add(keywords);
     
     // 限制记录数量
-    if (this.recentContents.size > 30) {
+    if (this.recentContents.size > 50) {
       const oldestKeyword = this.recentContents.values().next().value;
       this.recentContents.delete(oldestKeyword);
     }
@@ -1631,13 +1759,70 @@ class WaitWiki {
     console.log(`Preloaded ${this.cachedCards.size} local cards to cache`);
   }
   
+  // 强制预加载更多内容
+  async forcePreloadMoreContent() {
+    console.log('Force preloading more content...');
+    
+    // 统计当前各类型缓存数量
+    const typeCounts = new Map();
+    for (const [key, card] of this.cachedCards.entries()) {
+      const type = card.type;
+      typeCounts.set(type, (typeCounts.get(type) || 0) + 1);
+    }
+    
+         // 优先预加载本地内容，减少API依赖
+     for (const type of this.settings.contentTypes) {
+       const currentCount = typeCounts.get(type) || 0;
+       let targetCount;
+       if (type === 'wikipedia') {
+         targetCount = 60; // Wikipedia目标60条
+       } else if (type === 'datafacts') {
+         targetCount = 40; // 数据真相目标40条
+       } else {
+         targetCount = 20; // 其他类型目标20条
+       }
+      
+      if (currentCount < targetCount) {
+        const needed = targetCount - currentCount;
+        console.log(`Force preloading ${type}: ${needed} cards needed`);
+        
+        // 优先使用本地内容
+        const localCards = this.getLocalContent(type);
+        if (localCards && localCards.length > 0) {
+          const cardsToAdd = Math.min(needed, localCards.length);
+          for (let i = 0; i < cardsToAdd; i++) {
+            const card = localCards[i];
+            const cardKey = `${type}_local_${card.title}_${Date.now()}_${i}`;
+            this.cachedCards.set(cardKey, card);
+          }
+        }
+        
+        // 如果本地内容不足，尝试API
+        if (currentCount + (localCards?.length || 0) < targetCount) {
+          const apiNeeded = targetCount - currentCount - (localCards?.length || 0);
+          for (let i = 0; i < Math.min(apiNeeded, 3); i++) { // 减少API调用次数
+            try {
+              await this.fetchNewCardFromAPI(type);
+              await new Promise(resolve => setTimeout(resolve, 1000)); // 增加间隔
+            } catch (error) {
+              console.warn(`Failed to force preload ${type}:`, error);
+              break;
+            }
+          }
+        }
+      }
+    }
+    
+    console.log(`Force preload completed. Total cache size: ${this.cachedCards.size}`);
+  }
+  
   // 批量更新缓存内容
   async performBatchUpdate() {
     console.log('Starting batch update...');
     const now = Date.now();
     
-    // 防止频繁更新（至少间隔30秒）
-    if (now - this.batchUpdateConfig.lastBatchUpdate < 30000) {
+    // 防止频繁更新（至少间隔60秒）
+    if (now - this.batchUpdateConfig.lastBatchUpdate < 60000) {
       return;
     }
     
@@ -1650,35 +1835,53 @@ class WaitWiki {
       typeCounts.set(type, (typeCounts.get(type) || 0) + 1);
     }
     
-    // 优先更新Wikipedia（目标60条）
-    const wikipediaCount = typeCounts.get('wikipedia') || 0;
-    if (wikipediaCount < this.batchUpdateConfig.wikipediaTarget) {
-      const needed = Math.min(10, this.batchUpdateConfig.wikipediaTarget - wikipediaCount);
-      console.log(`Updating Wikipedia: ${needed} cards needed`);
-      
-      for (let i = 0; i < needed; i++) {
-        try {
-          await this.fetchWikipediaCards();
-          await new Promise(resolve => setTimeout(resolve, 500)); // 避免请求过快
-        } catch (error) {
-          console.warn('Failed to fetch Wikipedia card in batch update:', error);
-          break;
-        }
-      }
-    }
-    
-    // 更新其他类型（每种目标8条）
-    const otherTypes = this.settings.contentTypes.filter(type => type !== 'wikipedia');
+         // 优先更新Wikipedia（目标80条）
+     const wikipediaCount = typeCounts.get('wikipedia') || 0;
+     if (wikipediaCount < this.batchUpdateConfig.wikipediaTarget) {
+       const needed = Math.min(8, this.batchUpdateConfig.wikipediaTarget - wikipediaCount); // 从15改为8
+       console.log(`Updating Wikipedia: ${needed} cards needed`);
+       
+       for (let i = 0; i < needed; i++) {
+         try {
+           await this.fetchWikipediaCards();
+           await new Promise(resolve => setTimeout(resolve, this.periodicUpdateConfig.apiCallDelay)); // 使用配置的延迟
+         } catch (error) {
+           console.warn('Failed to fetch Wikipedia card in batch update:', error);
+           break;
+         }
+       }
+     }
+     
+     // 优先更新数据真相（目标30条）
+     const datafactsCount = typeCounts.get('datafacts') || 0;
+     const datafactsTarget = 30;
+     if (datafactsCount < datafactsTarget) {
+       const needed = Math.min(5, datafactsTarget - datafactsCount); // 从10改为5
+       console.log(`Updating datafacts: ${needed} cards needed`);
+       
+       for (let i = 0; i < needed; i++) {
+         try {
+           await this.fetchDataFactCards();
+           await new Promise(resolve => setTimeout(resolve, this.periodicUpdateConfig.apiCallDelay)); // 使用配置的延迟
+         } catch (error) {
+           console.warn('Failed to fetch datafacts card in batch update:', error);
+           break;
+         }
+       }
+     }
+     
+     // 更新其他类型（每种目标8条）
+     const otherTypes = this.settings.contentTypes.filter(type => type !== 'wikipedia' && type !== 'datafacts');
     for (const type of otherTypes) {
       const currentCount = typeCounts.get(type) || 0;
       if (currentCount < this.batchUpdateConfig.otherTarget) {
-        const needed = Math.min(2, this.batchUpdateConfig.otherTarget - currentCount);
+        const needed = Math.min(3, this.batchUpdateConfig.otherTarget - currentCount); // 从5改为3
         console.log(`Updating ${type}: ${needed} cards needed`);
         
         for (let i = 0; i < needed; i++) {
           try {
-            await this.fetchKnowledgeCard(type);
-            await new Promise(resolve => setTimeout(resolve, 300)); // 避免请求过快
+            await this.fetchNewCardFromAPI(type);
+            await new Promise(resolve => setTimeout(resolve, this.periodicUpdateConfig.apiCallDelay)); // 使用配置的延迟
           } catch (error) {
             console.warn(`Failed to fetch ${type} card in batch update:`, error);
             break;
@@ -1689,7 +1892,138 @@ class WaitWiki {
     
     console.log(`Batch update completed. Total cache size: ${this.cachedCards.size}`);
   }
+  
+  // 启动定时更新机制
+  startPeriodicUpdate() {
+    if (!this.periodicUpdateConfig.enabled) {
+      return;
+    }
+    
+    console.log('Starting periodic update mechanism...');
+    
+    // 清除可能存在的旧定时器
+    if (this.periodicUpdateConfig.updateTimer) {
+      clearInterval(this.periodicUpdateConfig.updateTimer);
+    }
+    
+    // 启动定时器
+    this.periodicUpdateConfig.updateTimer = setInterval(() => {
+      this.performPeriodicUpdate();
+    }, this.periodicUpdateConfig.interval);
+    
+    console.log(`Periodic update started with ${this.periodicUpdateConfig.interval / 1000}s interval`);
+  }
+  
+  // 停止定时更新机制
+  stopPeriodicUpdate() {
+    if (this.periodicUpdateConfig.updateTimer) {
+      clearInterval(this.periodicUpdateConfig.updateTimer);
+      this.periodicUpdateConfig.updateTimer = null;
+      console.log('Periodic update stopped');
+    }
+  }
+  
+  // 执行定时更新
+  async performPeriodicUpdate() {
+    const now = Date.now();
+    const cacheSize = this.cachedCards.size;
+    
+    // 防止频繁更新（至少间隔2分钟）
+    if (now - this.periodicUpdateConfig.lastPeriodicUpdate < 120000) {
+      return;
+    }
+    
+    // 检查缓存状态
+    if (cacheSize >= this.periodicUpdateConfig.maxCacheThreshold) {
+      console.log(`Cache is full (${cacheSize}), stopping periodic update`);
+      this.stopPeriodicUpdate();
+      return;
+    }
+    
+    // 缓存未满时进行更新
+    if (cacheSize < this.periodicUpdateConfig.maxCacheThreshold) {
+      console.log(`Cache not full (${cacheSize}), performing periodic update...`);
+      
+      this.periodicUpdateConfig.lastPeriodicUpdate = now;
+      
+      // 统计当前各类型缓存数量
+      const typeCounts = new Map();
+      for (const [key, card] of this.cachedCards.entries()) {
+        const type = card.type;
+        typeCounts.set(type, (typeCounts.get(type) || 0) + 1);
+      }
+      
+      // 优先更新Wikipedia（目标60条）
+      const wikipediaCount = typeCounts.get('wikipedia') || 0;
+      if (wikipediaCount < 60) {
+        const needed = Math.min(2, 60 - wikipediaCount); // 从3改为2
+        console.log(`Periodic update: Wikipedia needs ${needed} cards`);
+        
+        for (let i = 0; i < needed; i++) {
+          try {
+            await this.fetchWikipediaCards();
+            await new Promise(resolve => setTimeout(resolve, this.periodicUpdateConfig.apiCallDelay)); // 使用配置的延迟
+          } catch (error) {
+            console.warn('Failed to fetch Wikipedia card in periodic update:', error);
+            break;
+          }
+        }
+      }
+      
+      // 更新数据真相（目标40条）
+      const datafactsCount = typeCounts.get('datafacts') || 0;
+      if (datafactsCount < 40) {
+        const needed = Math.min(1, 40 - datafactsCount); // 从2改为1
+        console.log(`Periodic update: Datafacts needs ${needed} cards`);
+        
+        for (let i = 0; i < needed; i++) {
+          try {
+            await this.fetchDataFactCards();
+            await new Promise(resolve => setTimeout(resolve, this.periodicUpdateConfig.apiCallDelay)); // 使用配置的延迟
+          } catch (error) {
+            console.warn('Failed to fetch datafacts card in periodic update:', error);
+            break;
+          }
+        }
+      }
+      
+      // 更新其他类型（每种目标20条）
+      const otherTypes = this.settings.contentTypes.filter(type => type !== 'wikipedia' && type !== 'datafacts');
+      for (const type of otherTypes) {
+        const currentCount = typeCounts.get(type) || 0;
+        if (currentCount < 20) {
+          const needed = Math.min(1, 20 - currentCount);
+          console.log(`Periodic update: ${type} needs ${needed} cards`);
+          
+          for (let i = 0; i < needed; i++) {
+            try {
+              await this.fetchNewCardFromAPI(type);
+              await new Promise(resolve => setTimeout(resolve, this.periodicUpdateConfig.apiCallDelay)); // 使用配置的延迟
+            } catch (error) {
+              console.warn(`Failed to fetch ${type} card in periodic update:`, error);
+              break;
+            }
+          }
+        }
+      }
+      
+      console.log(`Periodic update completed. Total cache size: ${this.cachedCards.size}`);
+    }
+  }
+  
+  // 页面卸载时清理定时器
+  cleanup() {
+    this.stopPeriodicUpdate();
+    this.saveGlobalCache();
+  }
 }
 
 // 初始化 WaitWiki
-new WaitWiki();
+const waitWiki = new WaitWiki();
+
+// 页面卸载时清理资源
+window.addEventListener('beforeunload', () => {
+  if (waitWiki) {
+    waitWiki.cleanup();
+  }
+});
