@@ -30,6 +30,14 @@
 5. 点击 `加载已解压的扩展程序`
 6. 选择 WaitWiki 文件夹
 
+### 权限说明
+本扩展需要以下权限：
+- **activeTab**：仅在您激活标签页时访问当前页面，用于检测AI对话平台
+- **storage**：保存您的设置和缓存数据，所有数据仅存储在本地
+- **host_permissions**：访问公开的知识API，获取百科、名言、趣闻等内容
+
+所有数据仅存储在您的浏览器本地，不会上传到任何服务器。详细隐私政策请查看 [privacy.md](privacy.md)。
+
 ### 使用方法
 1. 在支持的 AI 平台（ChatGPT、Claude、Gemini、Kimi 等）
 2. 按 Enter 键发送消息时，WaitWiki 会自动显示知识卡片
