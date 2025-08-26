@@ -13,7 +13,7 @@ chrome.runtime.onInstalled.addListener(() => {
     cardSize: 'medium',
     displayDuration: '10',
     language: 'zh',
-            contentTypes: ['wikipedia', 'quotes', 'facts', 'advice', 'catfacts', 'trivia', 'cocktails', 'datafacts']
+            contentTypes: ['wikipedia', 'quotes', 'facts', 'advice', 'catfacts', 'trivia', 'cocktails', 'datafacts', 'gathas']
   });
 });
 

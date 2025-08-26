@@ -25,8 +25,8 @@ function loadSettings() {
     document.querySelector(`input[name="displayDuration"][value="${duration}"]`).checked = true;
     
     // 设置内容类型
-    const contentTypes = result.contentTypes || ['wikipedia', 'quotes', 'facts', 'advice', 'catfacts', 'trivia', 'cocktails'];
-    const allContentTypes = ['wikipedia', 'quotes', 'facts', 'advice', 'catfacts', 'trivia', 'cocktails'];
+    const contentTypes = result.contentTypes || ['wikipedia', 'quotes', 'facts', 'advice', 'catfacts', 'trivia', 'cocktails', 'datafacts', 'gathas'];
+    const allContentTypes = ['wikipedia', 'quotes', 'facts', 'advice', 'catfacts', 'trivia', 'cocktails', 'datafacts', 'gathas'];
     
     allContentTypes.forEach(type => {
       const checkbox = document.getElementById(`contentType-${type}`);
@@ -46,7 +46,7 @@ function saveSettings() {
   const durationElement = document.querySelector('input[name="displayDuration"]:checked');
   
   // 收集选中的内容类型
-  const allContentTypes = ['wikipedia', 'quotes', 'facts', 'advice', 'catfacts', 'trivia', 'cocktails'];
+  const allContentTypes = ['wikipedia', 'quotes', 'facts', 'advice', 'catfacts', 'trivia', 'cocktails', 'datafacts', 'gathas'];
   const selectedContentTypes = allContentTypes.filter(type => {
     const checkbox = document.getElementById(`contentType-${type}`);
     return checkbox && checkbox.checked;
@@ -112,7 +112,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   
   // 绑定内容类型复选框事件
-  const allContentTypes = ['wikipedia', 'quotes', 'facts', 'advice', 'catfacts', 'trivia', 'cocktails'];
+  const allContentTypes = ['wikipedia', 'quotes', 'facts', 'advice', 'catfacts', 'trivia', 'cocktails', 'datafacts', 'gathas'];
   allContentTypes.forEach(type => {
     const checkbox = document.getElementById(`contentType-${type}`);
     if (checkbox) {

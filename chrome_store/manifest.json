@@ -42,7 +42,7 @@
   ],
   "web_accessible_resources": [
     {
-      "resources": ["icons/*", "data/*", "datafacts.csv"],
+      "resources": ["gathas.csv", "icons/*", "data/*", "datafacts.csv", "gathas.csv"],
       "matches": ["<all_urls>"]
     }
   ],

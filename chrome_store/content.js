@@ -17,14 +17,14 @@
 class WaitWiki {
   constructor() {
     // 基础配置
-    this.settings = {
-      enabled: true,
-      showSourceInfo: true,
-      showIcon: true,
-      darkMode: false,
-      cardSize: 'medium',
+    this.settings = { 
+      enabled: true, 
+      showSourceInfo: true, 
+      showIcon: true, 
+      darkMode: false, 
+      cardSize: 'medium', 
       language: 'zh',
-      contentTypes: ['wikipedia', 'quotes', 'facts', 'advice', 'catfacts', 'trivia', 'cocktails', 'datafacts'],
+      contentTypes: ['wikipedia', 'quotes', 'facts', 'advice', 'catfacts', 'trivia', 'cocktails', 'datafacts', 'gathas'],
       displayDuration: '10'
     };
 
@@ -69,19 +69,10 @@ class WaitWiki {
       averageLoadTime: 0
     };
     
-    // 缓存持久化配置
-    this.cachePersistence = {
-      enabled: true,
-      maxSize: 500, // 最大缓存条目数
-      saveInterval: 30000, // 30秒保存一次
-      lastSaveTime: 0
-    };
-    
     // 用户统计
     this.userStats = {
       cardDisplayCount: 0,
-      userPreferences: new Map(),
-      favoriteContentTypes: new Map()
+      userPreferences: new Map()
     };
     
     // 对话状态
@@ -248,6 +239,9 @@ class WaitWiki {
       },
       datafacts: {
         apiNinjas: 'https://api.api-ninjas.com/v1/facts?limit=1'
+      },
+      gathas: {
+        local: 'csv'
       }
     };
     
@@ -314,9 +308,6 @@ class WaitWiki {
     // 加载全局缓存
     await this.loadGlobalCache();
     
-    // 加载持久化缓存
-    await this.loadCacheFromStorage();
-    
     // 加载展示时长设置
     await this.loadDisplayDuration();
     
@@ -329,7 +320,6 @@ class WaitWiki {
     // 页面卸载时保存缓存
     window.addEventListener('beforeunload', () => {
       this.saveGlobalCache();
-      this.saveCacheToStorage();
     });
     
     const platform = this.detectPlatform();
@@ -338,14 +328,8 @@ class WaitWiki {
     // 预加载本地内容到缓存
     this.preloadLocalContent();
     
-    // 清理重复卡片
-    this.cleanupDuplicateCards();
-    
     // 启动定时更新机制
     this.startPeriodicUpdate();
-    
-    // 启动缓存持久化
-    this.startCachePersistence();
     
     // 强制预加载更多内容，确保内容丰富度
     setTimeout(() => {
@@ -581,7 +565,7 @@ class WaitWiki {
     // 缓存未满时的更新逻辑
     else if (!isCacheFull) {
       // 每次点击都预加载一张新卡片
-      this.preloadOneMoreCard();
+    this.preloadOneMoreCard();
       
       // 如果点击次数达到阈值，触发批量更新
       if (this.batchUpdateConfig.clickCount >= this.batchUpdateConfig.batchSize) {
@@ -855,16 +839,16 @@ class WaitWiki {
       // 如果本地内容不足，尝试API获取
       if (!cards || cards.length === 0) {
         try {
-          switch (type) {
-            case 'wikipedia':
-              cards = await this.fetchWikipediaCards();
-              break;
-            case 'quotes':
-              cards = await this.fetchQuoteCards();
-              break;
-            case 'facts':
-              cards = await this.fetchFactCards();
-              break;
+      switch (type) {
+        case 'wikipedia':
+          cards = await this.fetchWikipediaCards();
+          break;
+        case 'quotes':
+          cards = await this.fetchQuoteCards();
+          break;
+        case 'facts':
+          cards = await this.fetchFactCards();
+          break;
             case 'advice':
               cards = await this.fetchAdviceCards();
               break;
@@ -880,8 +864,11 @@ class WaitWiki {
             case 'datafacts':
               cards = await this.fetchDataFactCards();
               break;
-            default:
-              break;
+            case 'gathas':
+              cards = await this.fetchGathasCards();
+          break;
+        default:
+          break;
           }
         } catch (apiError) {
           console.warn(`API failed for ${type}, using local content:`, apiError);
@@ -971,6 +958,9 @@ class WaitWiki {
         case 'datafacts':
           cards = await this.fetchDataFactCards();
           break;
+        case 'gathas':
+          cards = await this.fetchGathasCards();
+          break;
         default:
           break;
       }
@@ -984,21 +974,12 @@ class WaitWiki {
       return cards;
     } catch (error) {
       console.warn(`Failed to fetch new card from ${type}:`, error);
-      console.warn(`Error details:`, {
-        type,
-        message: error.message,
-        stack: error.stack,
-        timestamp: new Date().toISOString()
-      });
       this.failedApis.set(type, {
         count: (this.failedApis.get(type)?.count || 0) + 1,
         lastAttempt: Date.now(),
         error: error.message
       });
-      
-      // 当API失败时，使用本地备用数据
-      console.warn(`Using local fallback for ${type}`);
-      return this.getLocalFallbackForType(type);
+      return [];
     }
   }
 
@@ -1020,10 +1001,7 @@ class WaitWiki {
         language: lang
       }];
     } catch (error) {
-      console.warn('Wikipedia API failed, using local fallback:', error);
-      
-      // 备用：使用本地数据
-      return this.getLocalWikipediaFallback();
+      throw new Error(`Wikipedia API error: ${error.message}`);
     }
   }
 
@@ -1085,10 +1063,7 @@ class WaitWiki {
           language: this.settings.language
         }];
       } catch (fallbackError) {
-        console.warn('Quotable also failed, using local fallback:', fallbackError);
-        
-        // 最终备用：使用本地数据
-        return this.getLocalQuoteFallback();
+        throw new Error(`Quotes API error: 网络连接失败`);
       }
     }
   }
@@ -1123,374 +1098,8 @@ class WaitWiki {
         language: this.settings.language
       }];
     } catch (error) {
-      console.warn('Numbers API failed, trying API Ninjas as fallback:', error);
-      
-      // 备用：使用 API Ninjas
-      try {
-        const controller2 = new AbortController();
-        const timeoutId2 = setTimeout(() => controller2.abort(), 5000);
-        
-        const response = await fetch(this.apiEndpoints.facts.apiNinjas, {
-          signal: controller2.signal,
-          headers: {
-            'User-Agent': 'WaitWiki/1.2.0'
-          }
-        });
-        clearTimeout(timeoutId2);
-        
-        if (!response.ok) {
-          throw new Error(`HTTP ${response.status}`);
-        }
-        
-        const data = await response.json();
-        
-        return [{
-          type: 'facts',
-          title: '数字趣闻',
-          content: data[0]?.fact || '暂无趣闻',
-          source: 'API Ninjas',
-          url: '',
-          language: this.settings.language
-        }];
-      } catch (fallbackError) {
-        console.warn('API Ninjas also failed, using local fallback:', fallbackError);
-        
-        // 最终备用：使用本地数据
-        return this.getLocalFactFallback();
-      }
+      throw new Error(`Facts API error: 网络连接失败`);
     }
-  }
-
-  // 本地备用趣闻数据
-  getLocalFactFallback() {
-    const localFacts = [
-      {
-        type: 'facts',
-        title: '数字趣闻',
-        content: '全球互联网用户从1990年的0增长到2020年的46亿，数字鸿沟正在缩小。',
-        source: '本地数据',
-        url: '',
-        language: this.settings.language
-      },
-      {
-        type: 'facts',
-        title: '数字趣闻',
-        content: '全球预期寿命从1800年的29岁增长到2020年的72岁，人类寿命延长了2.5倍。',
-        source: '本地数据',
-        url: '',
-        language: this.settings.language
-      },
-      {
-        type: 'facts',
-        title: '数字趣闻',
-        content: '全球手机普及率从1990年的0.2%增长到2020年的95%，移动通信革命改变了世界。',
-        source: '本地数据',
-        url: '',
-        language: this.settings.language
-      },
-      {
-        type: 'facts',
-        title: '数字趣闻',
-        content: '全球识字率从1800年的12%增长到2020年的87%，教育普及率大幅提升。',
-        source: '本地数据',
-        url: '',
-        language: this.settings.language
-      },
-      {
-        type: 'facts',
-        title: '数字趣闻',
-        content: '全球极端贫困人口比例从1800年的90%下降到2020年的9%，减贫成效显著。',
-        source: '本地数据',
-        url: '',
-        language: this.settings.language
-      }
-    ];
-    
-    // 随机选择一个本地趣闻
-    const randomIndex = Math.floor(Math.random() * localFacts.length);
-    return [localFacts[randomIndex]];
-  }
-
-  // 本地备用名言数据
-  getLocalQuoteFallback() {
-    const localQuotes = [
-      {
-        type: 'quotes',
-        title: '每日名言',
-        content: '知识就是力量。',
-        source: '弗朗西斯·培根',
-        url: '',
-        language: this.settings.language
-      },
-      {
-        type: 'quotes',
-        title: '每日名言',
-        content: '学习是一个永无止境的过程。',
-        source: '孔子',
-        url: '',
-        language: this.settings.language
-      },
-      {
-        type: 'quotes',
-        title: '每日名言',
-        content: '好奇心是知识的种子。',
-        source: '爱因斯坦',
-        url: '',
-        language: this.settings.language
-      },
-      {
-        type: 'quotes',
-        title: '每日名言',
-        content: '读书破万卷，下笔如有神。',
-        source: '杜甫',
-        url: '',
-        language: this.settings.language
-      },
-      {
-        type: 'quotes',
-        title: '每日名言',
-        content: '学而不思则罔，思而不学则殆。',
-        source: '孔子',
-        url: '',
-        language: this.settings.language
-      }
-    ];
-    
-    // 随机选择一个本地名言
-    const randomIndex = Math.floor(Math.random() * localQuotes.length);
-    return [localQuotes[randomIndex]];
-  }
-
-  // 本地备用建议数据
-  getLocalAdviceFallback() {
-    const localAdvice = [
-      {
-        type: 'advice',
-        title: '生活小贴士',
-        content: '每天花10分钟学习新知识，一年后你会发现自己进步很大。',
-        source: '本地数据',
-        url: '',
-        language: this.settings.language
-      },
-      {
-        type: 'advice',
-        title: '生活小贴士',
-        content: '保持好奇心，对世界保持开放的心态。',
-        source: '本地数据',
-        url: '',
-        language: this.settings.language
-      },
-      {
-        type: 'advice',
-        title: '生活小贴士',
-        content: '多读书，多思考，多实践。',
-        source: '本地数据',
-        url: '',
-        language: this.settings.language
-      },
-      {
-        type: 'advice',
-        title: '生活小贴士',
-        content: '学会倾听，理解他人的观点。',
-        source: '本地数据',
-        url: '',
-        language: this.settings.language
-      },
-      {
-        type: 'advice',
-        title: '生活小贴士',
-        content: '保持学习的热情，知识会给你力量。',
-        source: '本地数据',
-        url: '',
-        language: this.settings.language
-      }
-    ];
-    
-    // 随机选择一个本地建议
-    const randomIndex = Math.floor(Math.random() * localAdvice.length);
-    return [localAdvice[randomIndex]];
-  }
-
-  // 本地备用猫咪趣闻数据
-  getLocalCatFactFallback() {
-    const localCatFacts = [
-      {
-        type: 'catfacts',
-        title: '猫咪趣闻',
-        content: '猫咪的胡须帮助它们测量空间，判断是否能通过狭窄的地方。',
-        source: '本地数据',
-        url: '',
-        language: this.settings.language
-      },
-      {
-        type: 'catfacts',
-        title: '猫咪趣闻',
-        content: '猫咪每天可以睡16-20小时，是真正的睡眠专家。',
-        source: '本地数据',
-        url: '',
-        language: this.settings.language
-      },
-      {
-        type: 'catfacts',
-        title: '猫咪趣闻',
-        content: '猫咪的嗅觉是人类的14倍，能闻到我们闻不到的气味。',
-        source: '本地数据',
-        url: '',
-        language: this.settings.language
-      },
-      {
-        type: 'catfacts',
-        title: '猫咪趣闻',
-        content: '猫咪的耳朵可以旋转180度，能听到我们听不到的高频声音。',
-        source: '本地数据',
-        url: '',
-        language: this.settings.language
-      },
-      {
-        type: 'catfacts',
-        title: '猫咪趣闻',
-        content: '猫咪的舌头上有倒刺，这些倒刺帮助它们梳理毛发和清洁身体。',
-        source: '本地数据',
-        url: '',
-        language: this.settings.language
-      }
-    ];
-    
-    // 随机选择一个本地猫咪趣闻
-    const randomIndex = Math.floor(Math.random() * localCatFacts.length);
-    return [localCatFacts[randomIndex]];
-  }
-
-  // 统一的本地备用数据方法
-  getLocalFallbackForType(type) {
-    switch (type) {
-      case 'wikipedia':
-        return this.getLocalWikipediaFallback();
-      case 'quotes':
-        return this.getLocalQuoteFallback();
-      case 'facts':
-        return this.getLocalFactFallback();
-      case 'advice':
-        return this.getLocalAdviceFallback();
-      case 'catfacts':
-        return this.getLocalCatFactFallback();
-      case 'trivia':
-        return this.getLocalTriviaFallback();
-      case 'cocktails':
-        return this.getLocalCocktailFallback();
-      case 'datafacts':
-        return this.getLocalDataFactFallback();
-      default:
-        return this.getLocalQuoteFallback(); // 默认返回名言
-    }
-  }
-
-  // 本地备用维基百科数据
-  getLocalWikipediaFallback() {
-    const localWikipedia = [
-      {
-        type: 'wikipedia',
-        title: '知识的力量',
-        content: '知识是人类进步的阶梯，每一次学习都是对未来的投资。',
-        source: '本地数据',
-        url: '',
-        language: this.settings.language
-      },
-      {
-        type: 'wikipedia',
-        title: '学习的重要性',
-        content: '终身学习是适应快速变化世界的关键能力。',
-        source: '本地数据',
-        url: '',
-        language: this.settings.language
-      }
-    ];
-    
-    const randomIndex = Math.floor(Math.random() * localWikipedia.length);
-    return [localWikipedia[randomIndex]];
-  }
-
-  // 本地备用问答数据
-  getLocalTriviaFallback() {
-    const localTrivia = [
-      {
-        type: 'trivia',
-        title: '知识问答',
-        content: '问题：人类大脑大约有多少个神经元？答案：约860亿个。',
-        source: '本地数据',
-        url: '',
-        language: this.settings.language
-      },
-      {
-        type: 'trivia',
-        title: '知识问答',
-        content: '问题：地球表面有多少被水覆盖？答案：约71%。',
-        source: '本地数据',
-        url: '',
-        language: this.settings.language
-      }
-    ];
-    
-    const randomIndex = Math.floor(Math.random() * localTrivia.length);
-    return [localTrivia[randomIndex]];
-  }
-
-  // 本地备用鸡尾酒数据
-  getLocalCocktailFallback() {
-    const localCocktails = [
-      {
-        type: 'cocktails',
-        title: '经典鸡尾酒',
-        content: '马提尼：金酒和干苦艾酒的经典组合，被誉为鸡尾酒之王。',
-        source: '本地数据',
-        url: '',
-        language: this.settings.language
-      },
-      {
-        type: 'cocktails',
-        title: '经典鸡尾酒',
-        content: '莫吉托：朗姆酒、薄荷、青柠和糖的清爽组合。',
-        source: '本地数据',
-        url: '',
-        language: this.settings.language
-      }
-    ];
-    
-    const randomIndex = Math.floor(Math.random() * localCocktails.length);
-    return [localCocktails[randomIndex]];
-  }
-
-  // 本地备用数据真相数据
-  getLocalDataFactFallback() {
-    const localDataFacts = [
-      {
-        type: 'datafacts',
-        title: '数据真相',
-        content: '全球互联网用户从1990年的0增长到2020年的46亿，数字鸿沟正在缩小。',
-        source: '本地数据',
-        url: '',
-        language: this.settings.language
-      },
-      {
-        type: 'datafacts',
-        title: '数据真相',
-        content: '全球预期寿命从1800年的29岁增长到2020年的72岁，人类寿命延长了2.5倍。',
-        source: '本地数据',
-        url: '',
-        language: this.settings.language
-      },
-      {
-        type: 'datafacts',
-        title: '数据真相',
-        content: '全球识字率从1800年的12%增长到2020年的87%，教育普及率大幅提升。',
-        source: '本地数据',
-        url: '',
-        language: this.settings.language
-      }
-    ];
-    
-    const randomIndex = Math.floor(Math.random() * localDataFacts.length);
-    return [localDataFacts[randomIndex]];
   }
 
   // 获取建议卡片
@@ -1521,10 +1130,7 @@ class WaitWiki {
         language: this.settings.language
       }];
     } catch (error) {
-      console.warn('Advice API failed, using local fallback:', error);
-      
-      // 备用：使用本地数据
-      return this.getLocalAdviceFallback();
+      throw new Error(`Advice API error: 网络连接失败`);
     }
   }
 
@@ -1556,10 +1162,7 @@ class WaitWiki {
         language: this.settings.language
       }];
     } catch (error) {
-      console.warn('Cat Facts API failed, using local fallback:', error);
-      
-      // 备用：使用本地数据
-      return this.getLocalCatFactFallback();
+      throw new Error(`Cat Facts API error: 网络连接失败`);
     }
   }
 
@@ -1597,10 +1200,7 @@ class WaitWiki {
         language: this.settings.language
       }];
     } catch (error) {
-      console.warn('Trivia API failed, using local fallback:', error);
-      
-      // 备用：使用本地数据
-      return this.getLocalTriviaFallback();
+      throw new Error(`Trivia API error: 网络连接失败`);
     }
   }
 
@@ -1652,17 +1252,14 @@ class WaitWiki {
         language: this.settings.language
       }];
     } catch (error) {
-      console.warn('Cocktail API failed, using local fallback:', error);
-      
-      // 备用：使用本地数据
-      return this.getLocalCocktailFallback();
+      throw new Error(`Cocktail API error: 网络连接失败`);
     }
   }
 
   // 获取数据真相卡片
   async fetchDataFactCards() {
     try {
-      // 优先从CSV文件读取数据
+      // 首先尝试从CSV文件读取数据
       const csvData = await this.loadDataFactsFromCSV();
       if (csvData && csvData.length > 0) {
         // 随机选择一条数据
@@ -1679,7 +1276,7 @@ class WaitWiki {
         }];
       }
       
-      // 如果CSV读取失败，使用API作为备用
+      // 如果CSV读取失败，使用API
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 5000);
       
@@ -1706,11 +1303,73 @@ class WaitWiki {
         language: this.settings.language
       }];
     } catch (error) {
-      console.warn('Data Facts API failed, using local fallback:', error);
-      
-      // 备用：使用本地数据
-      return this.getLocalDataFactFallback();
+      throw new Error(`Data Facts API error: 网络连接失败`);
     }
+  }
+  
+  // 获取偈语卡片（优先CSV）
+  async fetchGathasCards() {
+    try {
+      const csvData = await this.loadGathasFromCSV();
+      if (csvData && csvData.length > 0) {
+        const randomIndex = Math.floor(Math.random() * csvData.length);
+        const row = csvData[randomIndex];
+        return [{
+          type: 'gathas',
+          title: row.title || '偈语',
+          content: row.content,
+          source: row.source || '禅宗偈语',
+          url: '',
+          language: this.settings.language
+        }];
+      }
+      return this.getLocalGathasFallback();
+    } catch (error) {
+      return this.getLocalGathasFallback();
+    }
+  }
+  
+  // 从CSV加载偈语
+  async loadGathasFromCSV() {
+    try {
+      const csvUrl = chrome.runtime.getURL('gathas.csv');
+      const response = await fetch(csvUrl);
+      if (!response.ok) {
+        return null;
+      }
+      const csvText = await response.text();
+      const lines = csvText.split('\n');
+      const dataLines = lines.slice(1).filter(line => line.trim());
+      const items = dataLines.map(line => {
+        const columns = line.split(',');
+        if (columns.length >= 4) {
+          return {
+            title: columns[1] || '偈语',
+            content: (columns[2] || '').replace(/^\"|\"$/g, ''),
+            source: columns[3] || '禅宗偈语',
+            type: 'gathas'
+          };
+        }
+        return null;
+      }).filter(Boolean);
+      console.log(`Loaded ${items.length} gathas from CSV`);
+      return items;
+    } catch (e) {
+      console.warn('Failed to load gathas CSV:', e);
+      return null;
+    }
+  }
+  
+  // 本地偈语兜底
+  getLocalGathasFallback() {
+    return [{
+      type: 'gathas',
+      title: '偈语',
+      content: '至道无难，唯嫌拣择。',
+      source: '禅宗偈语',
+      url: '',
+      language: this.settings.language
+    }];
   }
   
   // 从CSV文件加载数据真相
@@ -1826,42 +1485,16 @@ class WaitWiki {
       return;
     }
     
-    // 检查UI元素是否存在
-    if (!this.ui.title || !this.ui.content) {
-      console.error('UI elements not initialized:', {
-        title: !!this.ui.title,
-        content: !!this.ui.content,
-        container: !!this.ui.container
-      });
-      this.isLoadingCard = false;
-      return;
-    }
-    
-    // 内容质量评估（最多重试3次）
-    let retryCount = 0;
-    const maxRetries = 3;
-    
-    while (retryCount < maxRetries) {
-      const qualityScore = this.assessContentQuality(this.currentCard);
-      if (qualityScore >= 0.3) {
-        break; // 质量达标，跳出循环
-      }
-      
-      console.warn(`Content quality too low (${qualityScore}), trying to get new card (attempt ${retryCount + 1}/${maxRetries})`);
+    // 内容质量评估
+    const qualityScore = this.assessContentQuality(this.currentCard);
+    if (qualityScore < 0.3) {
+      // 质量太差的内容，尝试获取新卡片
+      console.warn('Content quality too low, trying to get new card');
       this.selectRandomCard();
-      
-      if (!this.currentCard) {
-        console.warn('No more cards available after quality check');
-        this.isLoadingCard = false;
-        return;
+      if (this.currentCard) {
+        this.displayCardContent();
       }
-      
-      retryCount++;
-    }
-    
-    // 如果重试3次后质量仍然不达标，使用当前卡片
-    if (retryCount >= maxRetries) {
-      console.warn('Using current card despite low quality after max retries');
+      return;
     }
     
     // 更新用户偏好统计
@@ -2200,111 +1833,6 @@ class WaitWiki {
     console.log(`Preloaded ${this.cachedCards.size} local cards to cache`);
   }
   
-  // 保存缓存到chrome.storage
-  async saveCacheToStorage() {
-    if (!this.cachePersistence.enabled) return;
-    
-    try {
-      let cacheData = Array.from(this.cachedCards.entries());
-      const cacheSize = cacheData.length;
-      
-      // 如果缓存太大，只保存最新的条目
-      if (cacheSize > this.cachePersistence.maxSize) {
-        const sortedEntries = cacheData.sort((a, b) => {
-          // 按时间戳排序，保留最新的
-          const timeA = a[1].timestamp || 0;
-          const timeB = b[1].timestamp || 0;
-          return timeB - timeA;
-        });
-        cacheData = sortedEntries.slice(0, this.cachePersistence.maxSize);
-      }
-      
-      const cacheObject = Object.fromEntries(cacheData);
-      
-      await chrome.storage.local.set({
-        'waitwiki_cache': cacheObject,
-        'waitwiki_cache_timestamp': Date.now(),
-        'waitwiki_cache_size': cacheData.length
-      });
-      
-      this.cachePersistence.lastSaveTime = Date.now();
-      console.log(`Cache saved to storage: ${cacheData.length} items`);
-    } catch (error) {
-      console.warn('Failed to save cache to storage:', error);
-    }
-  }
-  
-  // 从chrome.storage加载缓存
-  async loadCacheFromStorage() {
-    if (!this.cachePersistence.enabled) return;
-    
-    try {
-      const result = await chrome.storage.local.get([
-        'waitwiki_cache',
-        'waitwiki_cache_timestamp',
-        'waitwiki_cache_size'
-      ]);
-      
-      if (result.waitwiki_cache) {
-        const cacheData = result.waitwiki_cache;
-        const cacheAge = Date.now() - (result.waitwiki_cache_timestamp || 0);
-        const maxAge = 24 * 60 * 60 * 1000; // 24小时
-        
-        // 如果缓存太旧，不加载
-        if (cacheAge > maxAge) {
-          console.log('Cache too old, not loading from storage');
-          return;
-        }
-        
-        Object.entries(cacheData).forEach(([key, card]) => {
-          this.cachedCards.set(key, card);
-        });
-        
-        console.log(`Cache loaded from storage: ${Object.keys(cacheData).length} items`);
-      }
-    } catch (error) {
-      console.warn('Failed to load cache from storage:', error);
-    }
-  }
-  
-  // 定期保存缓存
-  startCachePersistence() {
-    if (!this.cachePersistence.enabled) return;
-    
-    setInterval(() => {
-      if (this.cachedCards.size > 0) {
-        this.saveCacheToStorage();
-      }
-    }, this.cachePersistence.saveInterval);
-  }
-  
-  // 清理重复卡片
-  cleanupDuplicateCards() {
-    const seenTitles = new Set();
-    const seenContents = new Set();
-    const cardsToRemove = [];
-    
-    for (const [key, card] of this.cachedCards.entries()) {
-      const titleKey = `${card.type}_${card.title}`;
-      const contentKey = `${card.type}_${card.content}`;
-      
-      if (seenTitles.has(titleKey) || seenContents.has(contentKey)) {
-        cardsToRemove.push(key);
-      } else {
-        seenTitles.add(titleKey);
-        seenContents.add(contentKey);
-      }
-    }
-    
-    cardsToRemove.forEach(key => {
-      this.cachedCards.delete(key);
-    });
-    
-    if (cardsToRemove.length > 0) {
-      console.log(`Cleaned up ${cardsToRemove.length} duplicate cards`);
-    }
-  }
-  
   // 强制预加载更多内容
   async forcePreloadMoreContent() {
     console.log('Force preloading more content...');
@@ -2340,31 +1868,6 @@ class WaitWiki {
             const card = localCards[i];
             const cardKey = `${type}_local_${card.title}_${Date.now()}_${i}`;
             this.cachedCards.set(cardKey, card);
-          }
-        }
-        
-        // 特殊处理datafacts类型：优先加载CSV数据
-        if (type === 'datafacts' && currentCount < targetCount) {
-          try {
-            const csvData = await this.loadDataFactsFromCSV();
-            if (csvData && csvData.length > 0) {
-              const csvNeeded = Math.min(needed, csvData.length);
-              for (let i = 0; i < csvNeeded; i++) {
-                const selectedData = csvData[i];
-                const cardKey = `${type}_csv_${selectedData.title}_${Date.now()}_${i}`;
-                this.cachedCards.set(cardKey, {
-                  type: 'datafacts',
-                  title: selectedData.title || '数据真相',
-                  content: selectedData.content,
-                  source: selectedData.source,
-                  url: '',
-                  language: this.settings.language
-                });
-              }
-              console.log(`Loaded ${csvNeeded} data facts from CSV`);
-            }
-          } catch (error) {
-            console.warn('Failed to load CSV data:', error);
           }
         }
         
