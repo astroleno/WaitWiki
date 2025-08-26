@@ -39,6 +39,9 @@ class WaitWiki {
     this.maxRecentCards = 50;
     this.recentContents = new Set();
     this.maxRecentContents = 50;
+    // 短期去重：维护最近展示的标题队列，避免短时间内重复
+    this.recentTitleQueue = [];
+    this.recentTitleQueueSize = 5;
     
     // 批量更新配置
     this.batchUpdateConfig = {
@@ -66,13 +69,28 @@ class WaitWiki {
       totalCardsFetched: 0,
       apiCallCount: 0,
       cacheHitRate: 0,
-      averageLoadTime: 0
+      averageLoadTime: 0,
+      // 运行中会使用到以下字段，提前初始化避免 NaN/undefined
+      apiSuccessCount: 0,
+      apiFailureCount: 0,
+      totalResponseTime: 0,
+      averageResponseTime: 0,
+      lastResetTime: Date.now()
+    };
+    
+    // 缓存命中统计，fetchKnowledgeCard 中会读写这些字段
+    this.cacheStats = {
+      hits: 0,
+      misses: 0,
+      failures: 0
     };
     
     // 用户统计
     this.userStats = {
       cardDisplayCount: 0,
-      userPreferences: new Map()
+      userPreferences: new Map(),
+      // 记录各内容类型被展示的次数，供推荐算法使用
+      favoriteContentTypes: new Map()
     };
     
     // 对话状态
@@ -108,6 +126,18 @@ class WaitWiki {
       HTTP_OTHER: 'http_other',
       CORS: 'cors',
       UNKNOWN: 'unknown'
+    };
+
+    // 调试与后台日志
+    this.debug = false;
+    this.log = (...args) => { if (this.debug) console.log('[WaitWiki]', ...args); };
+    this.warn = (...args) => { if (this.debug) console.warn('[WaitWiki]', ...args); };
+    this.report = (level, message, extra) => {
+      try {
+        if (chrome && chrome.runtime && chrome.runtime.id && chrome.runtime.sendMessage) {
+          chrome.runtime.sendMessage({ action: 'waitwiki_log', level, message, extra });
+        }
+      } catch (e) { /* 静默 */ }
     };
     
     // 本地备用内容库（减少API依赖）
@@ -304,6 +334,7 @@ class WaitWiki {
     await this.loadSettings();
     this.createUISafe();
     this.setupEventListeners();
+    await this.primeCsvCaches();
     
     // 加载全局缓存
     await this.loadGlobalCache();
@@ -335,6 +366,70 @@ class WaitWiki {
     setTimeout(() => {
       this.forcePreloadMoreContent();
     }, 2000);
+  }
+  // 预热CSV缓存到 storage.local，后续优先读取，避免 runtime.getURL 依赖
+  async primeCsvCaches() {
+    try {
+      // datafacts
+      const datafacts = await this.tryLoadCsvViaUrl('datafacts.csv', (line) => {
+        const columns = line.split(',');
+        if (columns.length >= 4) {
+          return {
+            title: columns[1] || '数据真相',
+            content: columns[2] || '',
+            source: columns[3] || '权威数据源',
+            type: columns[4] || 'datafacts',
+            category: columns[5] || 'general',
+            year_start: columns[6] || '',
+            year_end: columns[7] || '',
+            region: columns[8] || 'global',
+            trend: columns[9] || 'improving'
+          };
+        }
+        return null;
+      });
+      if (datafacts && datafacts.length) {
+        await chrome.storage.local.set({ 'waitwiki_cache_datafacts_v1': datafacts });
+      }
+
+      // gathas
+      const gathas = await this.tryLoadCsvViaUrl('gathas.csv', (line) => {
+        const columns = line.split(',');
+        if (columns.length >= 4) {
+          return {
+            title: columns[1] || '偈语',
+            content: (columns[2] || '').replace(/^\"|\"$/g, ''),
+            source: columns[3] || '禅宗偈语',
+            type: 'gathas'
+          };
+        }
+        return null;
+      });
+      if (gathas && gathas.length) {
+        await chrome.storage.local.set({ 'waitwiki_cache_gathas_v1': gathas });
+      }
+    } catch (e) {
+      this.warn('primeCsvCaches failed:', e);
+    }
+  }
+
+  // 通用：通过 runtime.getURL 加载 CSV 并解析
+  async tryLoadCsvViaUrl(filename, mapLineFn) {
+    try {
+      if (!chrome || !chrome.runtime || typeof chrome.runtime.getURL !== 'function') {
+        return null;
+      }
+      const url = chrome.runtime.getURL(filename);
+      const resp = await fetch(url);
+      if (!resp.ok) return null;
+      const text = await resp.text();
+      const lines = text.split('\n');
+      const dataLines = lines.slice(1).filter(line => line.trim());
+      const items = dataLines.map(mapLineFn).filter(Boolean);
+      return items;
+    } catch (e) {
+      return null;
+    }
   }
 
   detectPlatform() {
@@ -690,17 +785,34 @@ class WaitWiki {
 
     // 监听存储变更
     chrome.storage.onChanged.addListener((changes) => {
-      Object.keys(changes).forEach(key => {
-        if (this.settings.hasOwnProperty(key)) this.settings[key] = changes[key].newValue;
-      });
-      this.applySettings();
+      try {
+        Object.keys(changes).forEach(key => {
+          if (this.settings.hasOwnProperty(key)) this.settings[key] = changes[key].newValue;
+        });
+        this.applySettings();
+
+        // 若内容类型发生变化，立即清理缓存中的禁用类型
+        if (changes.contentTypes) {
+          this.purgeCacheBySettings();
+        }
+      } catch (e) {
+        console.warn('[WaitWiki] Failed to handle storage change:', e);
+      }
     });
     
     // 监听来自popup的消息
     chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-      if (request.action === 'settingsChanged') {
-        this.settings = { ...this.settings, ...request.settings };
-        this.applySettings();
+      try {
+        if (request.action === 'settingsChanged') {
+          this.settings = { ...this.settings, ...request.settings };
+          this.applySettings();
+          // popup显式发来设置变更时，同步清理缓存
+          if (request.settings && request.settings.contentTypes) {
+            this.purgeCacheBySettings();
+          }
+        }
+      } catch (e) {
+        console.warn('[WaitWiki] Failed to handle runtime message:', e);
       }
     });
     
@@ -726,6 +838,16 @@ class WaitWiki {
     this.updateSourceInfoVisibility();
     this.applyDarkMode();
     this.applyCardSize();
+    // 设置变化后，若当前卡片类型被禁用，则立即隐藏或更换
+    try {
+      if (this.currentCard && this.settings.contentTypes && !this.settings.contentTypes.includes(this.currentCard.type)) {
+        // 当前展示的卡片类型已被禁用
+        this.hideCard();
+        this.currentCard = null;
+      }
+    } catch (e) {
+      console.warn('[WaitWiki] applySettings post-check failed:', e);
+    }
   }
 
   showCard(forceNew = false) {
@@ -1332,15 +1454,14 @@ class WaitWiki {
   // 从CSV加载偈语
   async loadGathasFromCSV() {
     try {
-      const csvUrl = chrome.runtime.getURL('gathas.csv');
-      const response = await fetch(csvUrl);
-      if (!response.ok) {
-        return null;
+      // 优先从本地缓存读取
+      const cache = await chrome.storage.local.get(['waitwiki_cache_gathas_v1']);
+      const cached = cache.waitwiki_cache_gathas_v1;
+      if (Array.isArray(cached) && cached.length) {
+        return cached;
       }
-      const csvText = await response.text();
-      const lines = csvText.split('\n');
-      const dataLines = lines.slice(1).filter(line => line.trim());
-      const items = dataLines.map(line => {
+      // 回退通过 URL 读取
+      const items = await this.tryLoadCsvViaUrl('gathas.csv', (line) => {
         const columns = line.split(',');
         if (columns.length >= 4) {
           return {
@@ -1351,11 +1472,10 @@ class WaitWiki {
           };
         }
         return null;
-      }).filter(Boolean);
-      console.log(`Loaded ${items.length} gathas from CSV`);
-      return items;
+      });
+      return items || null;
     } catch (e) {
-      console.warn('Failed to load gathas CSV:', e);
+      this.warn('Failed to load gathas CSV:', e);
       return null;
     }
   }
@@ -1375,22 +1495,14 @@ class WaitWiki {
   // 从CSV文件加载数据真相
   async loadDataFactsFromCSV() {
     try {
-      // 尝试从扩展根目录加载CSV文件
-      const csvUrl = chrome.runtime.getURL('datafacts.csv');
-      const response = await fetch(csvUrl);
-      
-      if (!response.ok) {
-        console.warn('Failed to load CSV file, using local content');
-        return null;
+      // 优先从本地缓存读取
+      const cache = await chrome.storage.local.get(['waitwiki_cache_datafacts_v1']);
+      const cached = cache.waitwiki_cache_datafacts_v1;
+      if (Array.isArray(cached) && cached.length) {
+        return cached;
       }
-      
-      const csvText = await response.text();
-      const lines = csvText.split('\n');
-      
-      // 跳过标题行
-      const dataLines = lines.slice(1).filter(line => line.trim());
-      
-      const dataFacts = dataLines.map(line => {
+      // 回退通过 URL 读取
+      const items = await this.tryLoadCsvViaUrl('datafacts.csv', (line) => {
         const columns = line.split(',');
         if (columns.length >= 4) {
           return {
@@ -1406,12 +1518,10 @@ class WaitWiki {
           };
         }
         return null;
-      }).filter(item => item && item.content);
-      
-      console.log(`Loaded ${dataFacts.length} data facts from CSV`);
-      return dataFacts;
+      });
+      return (items || []).filter(item => item && item.content);
     } catch (error) {
-      console.warn('Failed to load CSV file:', error);
+      this.warn('Failed to load CSV file:', error);
       return null;
     }
   }
@@ -1566,12 +1676,20 @@ class WaitWiki {
   selectRandomCard() {
     // 优先从缓存中选择
     const allCards = Array.from(this.cachedCards.values());
-    
+
     if (allCards.length === 0 && this.knowledgeCards.length === 0) {
       return;
     }
-    
-    const availableCards = allCards.length > 0 ? allCards : this.knowledgeCards;
+
+    // 仅保留设置中启用的类型
+    const allowedTypes = new Set(this.settings.contentTypes || []);
+    let baseCandidates = allCards.length > 0 ? allCards : this.knowledgeCards;
+    let availableCards = baseCandidates.filter(card => allowedTypes.has(card.type));
+
+    // 如果过滤完没有可用卡片，直接返回（防止展示已禁用类型）
+    if (availableCards.length === 0) {
+      return;
+    }
     
     // 如果只有一张卡片，直接返回
     if (availableCards.length === 1) {
@@ -1580,10 +1698,11 @@ class WaitWiki {
       return;
     }
     
-    // 智能过滤：优先选择未显示过的卡片
+    // 智能过滤：优先选择未显示过的卡片，先避开短期队列
     let filteredCards = availableCards.filter(card => {
       // 标题去重
       const titleNotRecent = !this.recentCards.has(card.title);
+      const titleNotInShortQueue = !this.recentTitleQueue.includes(card.title);
       
       // 索引去重
       const indexNotRecent = availableCards.indexOf(card) !== this.lastCardIndex;
@@ -1591,17 +1710,19 @@ class WaitWiki {
       // 内容相似度去重（防止内容重复）
       const contentNotSimilar = !this.isContentSimilar(card.content);
       
-      return titleNotRecent && indexNotRecent && contentNotSimilar;
+      return titleNotRecent && titleNotInShortQueue && indexNotRecent && contentNotSimilar;
     });
     
-    // 如果过滤后卡片太少，放宽过滤条件
+    // 如果过滤后卡片太少，先尝试拉取新卡片再放宽
     if (filteredCards.length < Math.min(5, availableCards.length * 0.3)) {
-      console.log('Filtered cards too few, relaxing conditions');
-      filteredCards = availableCards.filter(card => {
-        // 只保留标题去重
-        const titleNotRecent = !this.recentCards.has(card.title);
-        return titleNotRecent;
-      });
+      console.log('Filtered cards too few, preloading one more card before relaxing conditions');
+      try {
+        this.preloadOneMoreCard();
+      } catch (e) {
+        // 忽略
+      }
+      // 放宽到仅排除短期内出现过的标题
+      filteredCards = availableCards.filter(card => !this.recentTitleQueue.includes(card.title));
     }
     
     // 如果还是没有足够卡片，清空记录重新开始
@@ -1609,7 +1730,10 @@ class WaitWiki {
       console.log('No filtered cards available, clearing recent records');
       this.recentCards.clear();
       this.recentContents.clear();
-      filteredCards = availableCards;
+      // 清空短期队列，但保留最后一个，防止立刻复用同一张
+      const lastRecent = this.recentTitleQueue[this.recentTitleQueue.length - 1];
+      this.recentTitleQueue = lastRecent ? [lastRecent] : [];
+      filteredCards = availableCards.filter(card => card.title !== lastRecent);
     }
     
     // 优先选择Wikipedia和数据真相内容（增加出现占比）
@@ -1704,6 +1828,15 @@ class WaitWiki {
   // 添加卡片到最近显示记录
   addToRecentCards(title) {
     this.recentCards.add(title);
+    try {
+      // 维护短期队列，避免短时间内重复
+      this.recentTitleQueue.push(title);
+      if (this.recentTitleQueue.length > this.recentTitleQueueSize) {
+        this.recentTitleQueue.shift();
+      }
+    } catch (e) {
+      // 忽略
+    }
     
     // 如果超过最大记录数，删除最旧的记录
     if (this.recentCards.size > this.maxRecentCards) {
@@ -1815,7 +1948,8 @@ class WaitWiki {
   
   // 预加载本地内容到缓存
   preloadLocalContent() {
-    const localTypes = Object.keys(this.localContent);
+    // 仅预加载用户启用的内容类型
+    const localTypes = (this.settings.contentTypes || []).filter(type => !!this.localContent[type]);
     localTypes.forEach(type => {
       const localCards = this.localContent[type];
       if (localCards && localCards.length > 0) {
@@ -2089,6 +2223,31 @@ class WaitWiki {
   cleanup() {
     this.stopPeriodicUpdate();
     this.saveGlobalCache();
+  }
+
+  // 根据当前设置清理缓存：移除禁用类型的卡片
+  purgeCacheBySettings() {
+    try {
+      const allowed = new Set(this.settings.contentTypes || []);
+      let removed = 0;
+      for (const [key, card] of Array.from(this.cachedCards.entries())) {
+        if (!allowed.has(card.type)) {
+          this.cachedCards.delete(key);
+          removed++;
+        }
+      }
+      if (removed > 0) {
+        console.log(`[WaitWiki] Purged ${removed} cached cards not in allowed types.`);
+      }
+
+      // 如果当前卡片类型被禁用，立即处理
+      if (this.currentCard && !allowed.has(this.currentCard.type)) {
+        this.hideCard();
+        this.currentCard = null;
+      }
+    } catch (e) {
+      console.warn('[WaitWiki] purgeCacheBySettings failed:', e);
+    }
   }
 }
 
