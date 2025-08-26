@@ -140,140 +140,11 @@ class WaitWiki {
       } catch (e) { /* 静默 */ }
     };
     
-    // 本地备用内容库（减少API依赖）
-    this.localContent = {
-      quotes: [
-        { title: '每日名言', content: '知识就是力量。', source: '培根', type: 'quotes' },
-        { title: '每日名言', content: '学而不思则罔，思而不学则殆。', source: '孔子', type: 'quotes' },
-        { title: '每日名言', content: '读书破万卷，下笔如有神。', source: '杜甫', type: 'quotes' },
-        { title: '每日名言', content: '业精于勤，荒于嬉；行成于思，毁于随。', source: '韩愈', type: 'quotes' },
-        { title: '每日名言', content: '时间就是金钱。', source: '富兰克林', type: 'quotes' },
-        { title: '每日名言', content: '成功不是偶然的，而是必然的。', source: '爱默生', type: 'quotes' },
-        { title: '每日名言', content: '人生就像一面镜子，你对它笑，它就对你笑。', source: '萨克雷', type: 'quotes' },
-        { title: '每日名言', content: '最困难的时候，也是离成功最近的时候。', source: '居里夫人', type: 'quotes' },
-        { title: '每日名言', content: '天才就是百分之一的灵感加上百分之九十九的汗水。', source: '爱迪生', type: 'quotes' },
-        { title: '每日名言', content: '不要等待机会，而要创造机会。', source: '乔治·萧伯纳', type: 'quotes' },
-        { title: '每日名言', content: '一个人的价值，应该看他贡献什么，而不应当看他取得什么。', source: '爱因斯坦', type: 'quotes' },
-        { title: '每日名言', content: '生活就像一盒巧克力，你永远不知道下一颗是什么味道。', source: '阿甘正传', type: 'quotes' },
-        { title: '每日名言', content: '与其用华丽的外衣装饰自己，不如用知识充实自己。', source: '莎士比亚', type: 'quotes' },
-        { title: '每日名言', content: '成功的关键在于相信自己有能力成功。', source: '罗伯特·舒勒', type: 'quotes' },
-        { title: '每日名言', content: '最大的骄傲于最大的自卑都表示心灵的最软弱无力。', source: '斯宾诺莎', type: 'quotes' },
-        { title: '每日名言', content: '人生不是一支短短的蜡烛，而是一支由我们暂时拿着的火炬。', source: '萧伯纳', type: 'quotes' },
-        { title: '每日名言', content: '理想的人物不仅要在物质需要的满足上，还要在精神旨趣的满足上得到表现。', source: '黑格尔', type: 'quotes' },
-        { title: '每日名言', content: '一个人的真正伟大之处就在于他能够认识到自己的渺小。', source: '保罗', type: 'quotes' },
-        { title: '每日名言', content: '青春是一个短暂的美梦，当你醒来时，它早已消失无踪。', source: '莎士比亚', type: 'quotes' },
-        { title: '每日名言', content: '友谊是一棵可以庇荫的树。', source: '柯尔律治', type: 'quotes' },
-        { title: '每日名言', content: '真正的友谊，是一株成长缓慢的植物。', source: '华盛顿', type: 'quotes' },
-        { title: '每日名言', content: '友谊是灵魂的结合，这个结合是可以离异的，这是两个敏感，正直的人之间心照不宣的契约。', source: '伏尔泰', type: 'quotes' },
-        { title: '每日名言', content: '友谊像清晨的雾一样纯洁，奉承并不能得到友谊，友谊只能用忠实去巩固它。', source: '马克思', type: 'quotes' },
-        { title: '每日名言', content: '友谊是培养人的感情的学校。', source: '苏霍姆林斯基', type: 'quotes' },
-        { title: '每日名言', content: '友谊是天地间最可宝贵的东西，深挚的友谊是人生最大的一种安慰。', source: '邹韬奋', type: 'quotes' },
-        { title: '每日名言', content: '友谊是两颗心真诚相待，而不是一颗心对另一颗心的敲打。', source: '鲁迅', type: 'quotes' },
-        { title: '每日名言', content: '友谊是人生的调味品，也是人生的止痛药。', source: '爱默生', type: 'quotes' },
-        { title: '每日名言', content: '友谊是精神的融合，心灵的联姻，道德的纽结。', source: '佩恩', type: 'quotes' },
-        { title: '每日名言', content: '友谊是不会有感情的破产和快乐的幻灭的。', source: '巴尔扎克', type: 'quotes' },
-        { title: '每日名言', content: '友谊是培养人的感情的学校。我们所以需要友谊，并不是想用它打发时间，而是要在人身上，在自己的身上培养美德。', source: '苏霍姆林斯基', type: 'quotes' },
-        { title: '每日名言', content: '友谊是人生的调味品，也是人生的止痛药。', source: '爱默生', type: 'quotes' },
-        { title: '每日名言', content: '友谊是精神的融合，心灵的联姻，道德的纽结。', source: '佩恩', type: 'quotes' },
-        { title: '每日名言', content: '友谊是不会有感情的破产和快乐的幻灭的。', source: '巴尔扎克', type: 'quotes' },
-        { title: '每日名言', content: '友谊是培养人的感情的学校。我们所以需要友谊，并不是想用它打发时间，而是要在人身上，在自己的身上培养美德。', source: '苏霍姆林斯基', type: 'quotes' }
-      ],
-      facts: [
-        { title: '数字趣闻', content: '人体大约有206块骨头，但婴儿出生时有300多块骨头。', source: '人体科学', type: 'facts' },
-        { title: '数字趣闻', content: '蜜蜂需要访问约200万朵花才能生产1磅蜂蜜。', source: '自然科普', type: 'facts' },
-        { title: '数字趣闻', content: '地球表面71%被水覆盖，但只有2.5%是淡水。', source: '地理知识', type: 'facts' },
-        { title: '数字趣闻', content: '人类大脑每天产生约7万个想法。', source: '脑科学', type: 'facts' },
-        { title: '数字趣闻', content: '一只蚂蚁可以举起相当于自己体重50倍的物体。', source: '动物世界', type: 'facts' },
-        { title: '数字趣闻', content: '太阳光到达地球需要约8分钟。', source: '天文知识', type: 'facts' },
-        { title: '数字趣闻', content: '人类DNA与黑猩猩DNA的相似度高达98%。', source: '生物进化', type: 'facts' },
-        { title: '数字趣闻', content: '世界上每分钟有约250个婴儿出生。', source: '人口统计', type: 'facts' }
-      ],
-      advice: [
-        { title: '生活小贴士', content: '每天喝8杯水有助于保持身体健康和皮肤水润。', source: '健康建议', type: 'advice' },
-        { title: '生活小贴士', content: '定期运动30分钟可以显著提升心情和精力。', source: '运动健康', type: 'advice' },
-        { title: '生活小贴士', content: '保持良好睡眠习惯，每晚7-8小时睡眠最佳。', source: '睡眠科学', type: 'advice' },
-        { title: '生活小贴士', content: '多吃蔬菜水果，每天至少5份，营养更均衡。', source: '营养学', type: 'advice' },
-        { title: '生活小贴士', content: '定期整理工作环境，可以提高工作效率和专注力。', source: '心理学', type: 'advice' },
-        { title: '生活小贴士', content: '学会感恩，每天记录3件值得感谢的事情。', source: '积极心理学', type: 'advice' },
-        { title: '生活小贴士', content: '保持好奇心，终身学习是保持大脑活跃的秘诀。', source: '认知科学', type: 'advice' },
-        { title: '生活小贴士', content: '培养一个爱好，让生活更有乐趣和意义。', source: '生活哲学', type: 'advice' }
-      ],
-      catfacts: [
-        { title: '动物趣闻', content: '猫咪的胡须帮助它们测量空间，判断能否通过狭窄的地方。', source: '动物行为学', type: 'catfacts' },
-        { title: '动物趣闻', content: '猫咪每天睡眠12-16小时，是真正的睡眠专家。', source: '动物生理学', type: 'catfacts' },
-        { title: '动物趣闻', content: '猫咪的嗅觉比人类强14倍，能闻到很远的气味。', source: '动物感官', type: 'catfacts' },
-        { title: '动物趣闻', content: '猫咪的跳跃能力惊人，可以跳到比自己身高5倍的高度。', source: '动物运动学', type: 'catfacts' },
-        { title: '动物趣闻', content: '猫咪的舌头上有倒刺，帮助它们梳理毛发和喝水。', source: '动物解剖学', type: 'catfacts' },
-        { title: '动物趣闻', content: '猫咪的瞳孔会根据光线强度变化，从细缝到圆形。', source: '动物视觉', type: 'catfacts' },
-        { title: '动物趣闻', content: '猫咪的呼噜声频率在20-140赫兹，有助于骨骼愈合。', source: '动物声学', type: 'catfacts' },
-        { title: '动物趣闻', content: '猫咪的尾巴是重要的平衡器官，帮助它们在高处行走。', source: '动物平衡学', type: 'catfacts' }
-      ],
-      trivia: [
-        { title: '知识问答', content: '问题：世界上最高的山峰是？\n\n答案：珠穆朗玛峰，海拔8848米。', source: '地理知识', type: 'trivia' },
-        { title: '知识问答', content: '问题：人体最大的器官是？\n\n答案：皮肤，成年人的皮肤面积约2平方米。', source: '人体科学', type: 'trivia' },
-        { title: '知识问答', content: '问题：光速是多少？\n\n答案：约30万公里/秒，是宇宙中最快的速度。', source: '物理学', type: 'trivia' },
-        { title: '知识问答', content: '问题：地球绕太阳一周需要多长时间？\n\n答案：365.25天，这就是为什么每4年有一个闰年。', source: '天文学', type: 'trivia' },
-        { title: '知识问答', content: '问题：水的沸点是多少？\n\n答案：100摄氏度（在标准大气压下）。', source: '化学', type: 'trivia' },
-        { title: '知识问答', content: '问题：人类有多少对染色体？\n\n答案：23对，总共46条染色体。', source: '遗传学', type: 'trivia' },
-        { title: '知识问答', content: '问题：世界上最大的海洋是？\n\n答案：太平洋，占地球表面积的46%。', source: '海洋学', type: 'trivia' },
-        { title: '知识问答', content: '问题：植物进行光合作用需要什么？\n\n答案：阳光、二氧化碳和水。', source: '植物学', type: 'trivia' }
-      ],
-      cocktails: [
-        { title: '经典调酒', content: '配料：伏特加、橙汁\n\n制作方法：将伏特加和橙汁按1:2比例混合，加入冰块摇匀即可。', source: '调酒艺术', type: 'cocktails' },
-        { title: '经典调酒', content: '配料：金酒、汤力水、柠檬片\n\n制作方法：将金酒和汤力水按1:3比例混合，加入柠檬片装饰。', source: '调酒艺术', type: 'cocktails' },
-        { title: '经典调酒', content: '配料：威士忌、苏打水、柠檬\n\n制作方法：将威士忌和苏打水按1:2比例混合，加入柠檬片。', source: '调酒艺术', type: 'cocktails' },
-        { title: '经典调酒', content: '配料：朗姆酒、可乐、柠檬\n\n制作方法：将朗姆酒和可乐按1:3比例混合，加入柠檬片装饰。', source: '调酒艺术', type: 'cocktails' },
-        { title: '经典调酒', content: '配料：龙舌兰、橙汁、红石榴糖浆\n\n制作方法：分层倒入，先橙汁，再红石榴糖浆，最后龙舌兰。', source: '调酒艺术', type: 'cocktails' },
-        { title: '经典调酒', content: '配料：白兰地、柠檬汁、糖浆\n\n制作方法：将三种配料按2:1:1比例混合，加入冰块摇匀。', source: '调酒艺术', type: 'cocktails' },
-        { title: '经典调酒', content: '配料：伏特加、蔓越莓汁、青柠汁\n\n制作方法：将三种配料按2:2:1比例混合，加入冰块摇匀。', source: '调酒艺术', type: 'cocktails' },
-        { title: '经典调酒', content: '配料：金酒、柠檬汁、糖浆、苏打水\n\n制作方法：将金酒、柠檬汁、糖浆混合，最后加入苏打水。', source: '调酒艺术', type: 'cocktails' }
-      ],
-      datafacts: [
-        { title: '数据真相', content: '全球极端贫困人口比例从1990年的36%下降到2015年的10%，这意味着每天有13.7万人摆脱贫困。', source: '世界银行数据', type: 'datafacts' },
-        { title: '数据真相', content: '全球儿童死亡率从1990年的每1000名活产婴儿93人死亡，下降到2019年的38人，下降了59%。', source: '联合国儿童基金会', type: 'datafacts' },
-        { title: '数据真相', content: '全球手机普及率从2000年的12%增长到2020年的95%，移动通信革命改变了世界。', source: '国际电信联盟', type: 'datafacts' },
-        { title: '数据真相', content: '全球女性平均受教育年限从1970年的3.4年增加到2018年的8.4年，教育性别差距大幅缩小。', source: '联合国教科文组织', type: 'datafacts' },
-        { title: '数据真相', content: '全球可再生能源发电量从2000年的2.8%增长到2020年的29%，清洁能源转型加速。', source: '国际能源署', type: 'datafacts' },
-        { title: '数据真相', content: '全球预期寿命从1960年的52.6岁增长到2019年的72.8岁，人类寿命显著延长。', source: '世界卫生组织', type: 'datafacts' },
-        { title: '数据真相', content: '全球互联网用户比例从2000年的7%增长到2020年的59%，数字鸿沟正在缩小。', source: '国际电信联盟', type: 'datafacts' },
-        { title: '数据真相', content: '全球森林覆盖率从1990年的31.8%下降到2020年的31.2%，但下降速度正在减缓。', source: '联合国粮农组织', type: 'datafacts' }
-      ]
-    };
+                // 本地备用内容库（由全局对象提供，减少在内容脚本中硬编码）
+    this.localContent = window.WaitWikiLocalContent || {};
     
-    // API配置
-    this.apiEndpoints = {
-      wikipedia: {
-        random: (lang) => `https://${lang}.wikipedia.org/api/rest_v1/page/random/summary`,
-        featured: (lang, date) => `https://api.wikimedia.org/feed/v1/wikipedia/${lang}/featured/${date}`,
-        onthisday: (lang, month, day) => `https://api.wikimedia.org/feed/v1/wikipedia/${lang}/onthisday/all/${month}/${day}`
-      },
-      quotes: {
-        zen: 'https://zenquotes.io/api/random',
-        quotable: 'https://api.quotable.io/random'
-      },
-      facts: {
-        numbers: 'https://numbersapi.com/random/trivia',
-        apiNinjas: 'https://api.api-ninjas.com/v1/facts?limit=1'
-      },
-      advice: {
-        slip: 'https://api.adviceslip.com/advice'
-      },
-      catfacts: {
-        ninja: 'https://catfact.ninja/fact'
-      },
-      trivia: {
-        api: 'https://the-trivia-api.com/v2/questions?limit=1'
-      },
-      cocktails: {
-        db: 'https://www.thecocktaildb.com/api/json/v1/1/random.php'
-      },
-      datafacts: {
-        apiNinjas: 'https://api.api-ninjas.com/v1/facts?limit=1'
-      },
-      gathas: {
-        local: 'csv'
-      }
-    };
+    // API配置（改为全局对象来源，避免在内容脚本重复硬编码）
+    this.apiEndpoints = window.WaitWikiEndpoints || this.apiEndpoints;
     
     // V1.0: 平台检测配置（沿用ArtBreeze的成熟配置）
     this.platformConfig = {
@@ -369,83 +240,23 @@ class WaitWiki {
   }
   // 预热CSV缓存到 storage.local，后续优先读取，避免 runtime.getURL 依赖
   async primeCsvCaches() {
-    try {
-      // datafacts
-      const datafacts = await this.tryLoadCsvViaUrl('datafacts.csv', (line) => {
-        const columns = line.split(',');
-        if (columns.length >= 4) {
-          return {
-            title: columns[1] || '数据真相',
-            content: columns[2] || '',
-            source: columns[3] || '权威数据源',
-            type: columns[4] || 'datafacts',
-            category: columns[5] || 'general',
-            year_start: columns[6] || '',
-            year_end: columns[7] || '',
-            region: columns[8] || 'global',
-            trend: columns[9] || 'improving'
-          };
-        }
-        return null;
-      });
-      if (datafacts && datafacts.length) {
-        await chrome.storage.local.set({ 'waitwiki_cache_datafacts_v1': datafacts });
-      }
-
-      // gathas
-      const gathas = await this.tryLoadCsvViaUrl('gathas.csv', (line) => {
-        const columns = line.split(',');
-        if (columns.length >= 4) {
-          return {
-            title: columns[1] || '偈语',
-            content: (columns[2] || '').replace(/^\"|\"$/g, ''),
-            source: columns[3] || '禅宗偈语',
-            type: 'gathas'
-          };
-        }
-        return null;
-      });
-      if (gathas && gathas.length) {
-        await chrome.storage.local.set({ 'waitwiki_cache_gathas_v1': gathas });
-      }
-    } catch (e) {
-      this.warn('primeCsvCaches failed:', e);
+    if (window.WaitWikiCsvLoader && window.WaitWikiCsvLoader.primeCsvCaches) {
+      await window.WaitWikiCsvLoader.primeCsvCaches();
     }
   }
 
   // 通用：通过 runtime.getURL 加载 CSV 并解析
   async tryLoadCsvViaUrl(filename, mapLineFn) {
-    try {
-      if (!chrome || !chrome.runtime || typeof chrome.runtime.getURL !== 'function') {
-        return null;
-      }
-      const url = chrome.runtime.getURL(filename);
-      const resp = await fetch(url);
-      if (!resp.ok) return null;
-      const text = await resp.text();
-      const lines = text.split('\n');
-      const dataLines = lines.slice(1).filter(line => line.trim());
-      const items = dataLines.map(mapLineFn).filter(Boolean);
-      return items;
-    } catch (e) {
-      return null;
+    if (window.WaitWikiCsvLoader && window.WaitWikiCsvLoader.tryLoadCsvViaUrl) {
+      return await window.WaitWikiCsvLoader.tryLoadCsvViaUrl(filename, mapLineFn);
     }
+    return null;
   }
 
   detectPlatform() {
-    const H = window.location.hostname;
-    const P = window.location.pathname;
-    
-    // 沿用ArtBreeze的成熟平台检测逻辑
-    if (H.includes('chatgpt.com') || H.includes('chat.openai.com')) return 'chatgpt';
-    if (H.includes('claude.ai')) return 'claude';
-    if (H.includes('gemini.google.com') || H.includes('bard.google.com')) return 'gemini';
-    if (H.includes('copilot.microsoft.com') || H.includes('bing.com')) return 'copilot';
-    if (H.includes('kimi.moonshot.cn') || H.includes('kimi.ai')) return 'kimi';
-    if (H.includes('grok') || (H.includes('x.com') && P.includes('grok'))) return 'grok';
-    if (H.includes('chat.deepseek.com')) return 'deepseek';
-    if (H.includes('yuanbao.tencent.com')) return 'yuanbao';
-    if (H.includes('doubao.com') || H.includes('volcengine.com')) return 'doubao';
+    if (typeof window.detectPlatform === 'function') {
+      return window.detectPlatform();
+    }
     return null;
   }
 
@@ -955,40 +766,33 @@ class WaitWiki {
     try {
       let cards = [];
       
-      // 优先使用本地内容，减少API依赖
-      cards = this.getLocalContent(type);
+      // datafacts/gathas 优先使用CSV加载，其它类型优先本地
+      if (type === 'datafacts') {
+        try {
+          cards = await this.fetchDataFactCards();
+        } catch (e) {
+          cards = this.getLocalContent(type);
+        }
+      } else if (type === 'gathas') {
+        try {
+          cards = await this.fetchGathasCards();
+        } catch (e) {
+          cards = this.getLocalContent(type);
+        }
+      } else {
+        cards = this.getLocalContent(type);
+      }
       
-      // 如果本地内容不足，尝试API获取
+      // 如果本地/CSV内容不足，尝试API获取
       if (!cards || cards.length === 0) {
         try {
-      switch (type) {
-        case 'wikipedia':
-          cards = await this.fetchWikipediaCards();
-          break;
-        case 'quotes':
-          cards = await this.fetchQuoteCards();
-          break;
-        case 'facts':
-          cards = await this.fetchFactCards();
-          break;
-            case 'advice':
-              cards = await this.fetchAdviceCards();
-              break;
-            case 'catfacts':
-              cards = await this.fetchCatFactCards();
-              break;
-            case 'trivia':
-              cards = await this.fetchTriviaCards();
-              break;
-            case 'cocktails':
-              cards = await this.fetchCocktailCards();
-              break;
-            case 'datafacts':
-              cards = await this.fetchDataFactCards();
-              break;
-            case 'gathas':
-              cards = await this.fetchGathasCards();
-          break;
+          // 使用全局内容类型映射，去除硬编码
+          if (window.WaitWikiContentTypes && window.WaitWikiContentTypes.isSupported(type)) {
+            const methodName = window.WaitWikiContentTypes.getApiMethod(type);
+            if (methodName && typeof this[methodName] === 'function') {
+              cards = await this[methodName]();
+            }
+          }
         default:
           break;
           }
@@ -1055,44 +859,13 @@ class WaitWiki {
     try {
       let cards = [];
       
-      switch (type) {
-        case 'wikipedia':
-          cards = await this.fetchWikipediaCards();
-          break;
-        case 'quotes':
-          cards = await this.fetchQuoteCards();
-          break;
-        case 'facts':
-          cards = await this.fetchFactCards();
-          break;
-        case 'advice':
-          cards = await this.fetchAdviceCards();
-          break;
-        case 'catfacts':
-          cards = await this.fetchCatFactCards();
-          break;
-        case 'trivia':
-          cards = await this.fetchTriviaCards();
-          break;
-        case 'cocktails':
-          cards = await this.fetchCocktailCards();
-          break;
-        case 'datafacts':
-          cards = await this.fetchDataFactCards();
-          break;
-        case 'gathas':
-          cards = await this.fetchGathasCards();
-          break;
-        default:
-          break;
+      // 使用全局配置替代硬编码映射
+      if (window.WaitWikiContentTypes && window.WaitWikiContentTypes.isSupported(type)) {
+        const methodName = window.WaitWikiContentTypes.getApiMethod(type);
+        if (methodName && this[methodName]) {
+          cards = await this[methodName]();
+        }
       }
-      
-      // 缓存新获取的卡片
-      cards.forEach(card => {
-        const cardKey = `${type}_${card.title}_${Date.now()}`;
-        this.cachedCards.set(cardKey, card);
-      });
-      
       return cards;
     } catch (error) {
       console.warn(`Failed to fetch new card from ${type}:`, error);
@@ -1107,423 +880,82 @@ class WaitWiki {
 
   // 获取Wikipedia卡片
   async fetchWikipediaCards() {
-    const lang = this.settings.language;
-    const url = this.apiEndpoints.wikipedia.random(lang);
-    
-    try {
-      const response = await fetch(url);
-      const data = await response.json();
-      
-      return [{
-        type: 'wikipedia',
-        title: data.title || '未知标题',
-        content: data.extract || '暂无内容',
-        source: 'Wikipedia',
-        url: data.content_urls?.desktop?.page || '',
-        language: lang
-      }];
-    } catch (error) {
-      throw new Error(`Wikipedia API error: ${error.message}`);
+    if (window.WaitWikiApiClients && window.WaitWikiApiClients.fetchWikipediaCards) {
+      return await window.WaitWikiApiClients.fetchWikipediaCards(this.settings.language);
     }
+    return [];
   }
 
   // 获取名言卡片
   async fetchQuoteCards() {
-    try {
-      // 优先使用 Zen Quotes，增加超时处理
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 5000); // 5秒超时
-      
-      const response = await fetch(this.apiEndpoints.quotes.zen, {
-        signal: controller.signal,
-        headers: {
-          'User-Agent': 'WaitWiki/1.2.0'
-        }
-      });
-      clearTimeout(timeoutId);
-      
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`);
-      }
-      
-      const data = await response.json();
-      
-      return [{
-        type: 'quotes',
-        title: '每日名言',
-        content: data[0]?.q || '暂无名言',
-        source: data[0]?.a || '未知作者',
-        url: '',
-        language: this.settings.language
-      }];
-    } catch (error) {
-      // 备用：使用 Quotable
-      try {
-        const controller2 = new AbortController();
-        const timeoutId2 = setTimeout(() => controller2.abort(), 5000);
-        
-        const response = await fetch(this.apiEndpoints.quotes.quotable, {
-          signal: controller2.signal,
-          headers: {
-            'User-Agent': 'WaitWiki/1.2.0'
-          }
-        });
-        clearTimeout(timeoutId2);
-        
-        if (!response.ok) {
-          throw new Error(`HTTP ${response.status}`);
-        }
-        
-        const data = await response.json();
-        
-        return [{
-          type: 'quotes',
-          title: '每日名言',
-          content: data.content || '暂无名言',
-          source: data.author || '未知作者',
-          url: '',
-          language: this.settings.language
-        }];
-      } catch (fallbackError) {
-        throw new Error(`Quotes API error: 网络连接失败`);
-      }
+    if (window.WaitWikiApiClients && window.WaitWikiApiClients.fetchQuoteCards) {
+      return await window.WaitWikiApiClients.fetchQuoteCards();
     }
+    return [];
   }
 
   // 获取趣闻卡片
   async fetchFactCards() {
-    try {
-      // 优先使用 Numbers API，增加超时处理
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 5000);
-      
-      const response = await fetch(this.apiEndpoints.facts.numbers, {
-        signal: controller.signal,
-        headers: {
-          'User-Agent': 'WaitWiki/1.2.0'
-        }
-      });
-      clearTimeout(timeoutId);
-      
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`);
-      }
-      
-      const data = await response.json();
-      
-      return [{
-        type: 'facts',
-        title: '数字趣闻',
-        content: data.text || '暂无趣闻',
-        source: 'Numbers API',
-        url: '',
-        language: this.settings.language
-      }];
-    } catch (error) {
-      throw new Error(`Facts API error: 网络连接失败`);
+    if (window.WaitWikiApiClients && window.WaitWikiApiClients.fetchFactCards) {
+      return await window.WaitWikiApiClients.fetchFactCards();
     }
+    return [];
   }
 
   // 获取建议卡片
   async fetchAdviceCards() {
-    try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 5000);
-      
-      const response = await fetch(this.apiEndpoints.advice.slip, {
-        signal: controller.signal,
-        headers: {
-          'User-Agent': 'WaitWiki/1.2.0'
-        }
-      });
-      clearTimeout(timeoutId);
-      
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`);
-      }
-      
-      const data = await response.json();
-      return [{
-        type: 'advice',
-        title: '生活小贴士',
-        content: data.slip?.advice || '暂无建议',
-        source: 'Advice Slip API',
-        url: '',
-        language: this.settings.language
-      }];
-    } catch (error) {
-      throw new Error(`Advice API error: 网络连接失败`);
+    if (window.WaitWikiApiClients && window.WaitWikiApiClients.fetchAdviceCards) {
+      return await window.WaitWikiApiClients.fetchAdviceCards();
     }
+    return [];
   }
 
   // 获取猫咪趣闻卡片
   async fetchCatFactCards() {
-    try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 5000);
-      
-      const response = await fetch(this.apiEndpoints.catfacts.ninja, {
-        signal: controller.signal,
-        headers: {
-          'User-Agent': 'WaitWiki/1.2.0'
-        }
-      });
-      clearTimeout(timeoutId);
-      
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`);
-      }
-      
-      const data = await response.json();
-      return [{
-        type: 'catfacts',
-        title: '猫咪趣闻',
-        content: data.fact || '暂无趣闻',
-        source: 'Cat Facts API',
-        url: '',
-        language: this.settings.language
-      }];
-    } catch (error) {
-      throw new Error(`Cat Facts API error: 网络连接失败`);
+    if (window.WaitWikiApiClients && window.WaitWikiApiClients.fetchCatFactCards) {
+      return await window.WaitWikiApiClients.fetchCatFactCards();
     }
+    return [];
   }
 
   // 获取知识问答卡片
   async fetchTriviaCards() {
-    try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 5000);
-      
-      const response = await fetch(this.apiEndpoints.trivia.api, {
-        signal: controller.signal,
-        headers: {
-          'User-Agent': 'WaitWiki/1.2.0'
-        }
-      });
-      clearTimeout(timeoutId);
-      
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`);
-      }
-      
-      const data = await response.json();
-      
-      const question = data[0];
-      if (!question) {
-        throw new Error('No trivia question received');
-      }
-      
-      return [{
-        type: 'trivia',
-        title: `${question.category || '知识问答'}`,
-        content: `${question.question?.text || question.question || '暂无问题'}\n\n答案：${question.correctAnswer || '暂无答案'}`,
-        source: 'The Trivia API',
-        url: '',
-        language: this.settings.language
-      }];
-    } catch (error) {
-      throw new Error(`Trivia API error: 网络连接失败`);
+    if (window.WaitWikiApiClients && window.WaitWikiApiClients.fetchTriviaCards) {
+      return await window.WaitWikiApiClients.fetchTriviaCards();
     }
+    return [];
   }
 
   // 获取鸡尾酒卡片
   async fetchCocktailCards() {
-    try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 5000);
-      
-      const response = await fetch(this.apiEndpoints.cocktails.db, {
-        signal: controller.signal,
-        headers: {
-          'User-Agent': 'WaitWiki/1.2.0'
-        }
-      });
-      clearTimeout(timeoutId);
-      
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`);
-      }
-      
-      const data = await response.json();
-      
-      const drink = data.drinks?.[0];
-      if (!drink) {
-        throw new Error('No cocktail data received');
-      }
-      
-      const instructions = drink.strInstructions || '暂无制作方法';
-      const ingredients = [];
-      
-      // 提取配料信息
-      for (let i = 1; i <= 15; i++) {
-        const ingredient = drink[`strIngredient${i}`];
-        const measure = drink[`strMeasure${i}`];
-        if (ingredient) {
-          ingredients.push(measure ? `${measure} ${ingredient}` : ingredient);
-        }
-      }
-      
-      const content = `配料：${ingredients.join(', ')}\n\n制作方法：${instructions}`;
-      
-      return [{
-        type: 'cocktails',
-        title: `${drink.strDrink || '神秘鸡尾酒'}`,
-        content: content,
-        source: 'TheCocktailDB',
-        url: '',
-        language: this.settings.language
-      }];
-    } catch (error) {
-      throw new Error(`Cocktail API error: 网络连接失败`);
+    if (window.WaitWikiApiClients && window.WaitWikiApiClients.fetchCocktailCards) {
+      return await window.WaitWikiApiClients.fetchCocktailCards();
     }
+    return [];
   }
 
   // 获取数据真相卡片
   async fetchDataFactCards() {
-    try {
-      // 首先尝试从CSV文件读取数据
-      const csvData = await this.loadDataFactsFromCSV();
-      if (csvData && csvData.length > 0) {
-        // 随机选择一条数据
-        const randomIndex = Math.floor(Math.random() * csvData.length);
-        const selectedData = csvData[randomIndex];
-        
-        return [{
-          type: 'datafacts',
-          title: selectedData.title || '数据真相',
-          content: selectedData.content,
-          source: selectedData.source,
-          url: '',
-          language: this.settings.language
-        }];
-      }
-      
-      // 如果CSV读取失败，使用API
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 5000);
-      
-      const response = await fetch(this.apiEndpoints.datafacts.apiNinjas, {
-        signal: controller.signal,
-        headers: {
-          'User-Agent': 'WaitWiki/1.2.0'
-        }
-      });
-      clearTimeout(timeoutId);
-      
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`);
-      }
-      
-      const data = await response.json();
-      
-      return [{
-        type: 'datafacts',
-        title: '数据真相',
-        content: data.fact || '暂无数据真相',
-        source: 'API Ninjas',
-        url: '',
-        language: this.settings.language
-      }];
-    } catch (error) {
-      throw new Error(`Data Facts API error: 网络连接失败`);
+    if (window.WaitWikiApiClients && window.WaitWikiApiClients.fetchDataFactCards) {
+      return await window.WaitWikiApiClients.fetchDataFactCards();
     }
+    return [];
   }
   
   // 获取偈语卡片（优先CSV）
   async fetchGathasCards() {
-    try {
-      const csvData = await this.loadGathasFromCSV();
-      if (csvData && csvData.length > 0) {
-        const randomIndex = Math.floor(Math.random() * csvData.length);
-        const row = csvData[randomIndex];
-        return [{
-          type: 'gathas',
-          title: row.title || '偈语',
-          content: row.content,
-          source: row.source || '禅宗偈语',
-          url: '',
-          language: this.settings.language
-        }];
-      }
-      return this.getLocalGathasFallback();
-    } catch (error) {
-      return this.getLocalGathasFallback();
+    if (window.WaitWikiApiClients && window.WaitWikiApiClients.fetchGathasCards) {
+      return await window.WaitWikiApiClients.fetchGathasCards();
     }
-  }
-  
-  // 从CSV加载偈语
-  async loadGathasFromCSV() {
-    try {
-      // 优先从本地缓存读取
-      const cache = await chrome.storage.local.get(['waitwiki_cache_gathas_v1']);
-      const cached = cache.waitwiki_cache_gathas_v1;
-      if (Array.isArray(cached) && cached.length) {
-        return cached;
-      }
-      // 回退通过 URL 读取
-      const items = await this.tryLoadCsvViaUrl('gathas.csv', (line) => {
-        const columns = line.split(',');
-        if (columns.length >= 4) {
-          return {
-            title: columns[1] || '偈语',
-            content: (columns[2] || '').replace(/^\"|\"$/g, ''),
-            source: columns[3] || '禅宗偈语',
-            type: 'gathas'
-          };
-        }
-        return null;
-      });
-      return items || null;
-    } catch (e) {
-      this.warn('Failed to load gathas CSV:', e);
-      return null;
-    }
-  }
-  
-  // 本地偈语兜底
-  getLocalGathasFallback() {
-    return [{
-      type: 'gathas',
-      title: '偈语',
-      content: '至道无难，唯嫌拣择。',
-      source: '禅宗偈语',
-      url: '',
-      language: this.settings.language
-    }];
+    return [];
   }
   
   // 从CSV文件加载数据真相
   async loadDataFactsFromCSV() {
-    try {
-      // 优先从本地缓存读取
-      const cache = await chrome.storage.local.get(['waitwiki_cache_datafacts_v1']);
-      const cached = cache.waitwiki_cache_datafacts_v1;
-      if (Array.isArray(cached) && cached.length) {
-        return cached;
-      }
-      // 回退通过 URL 读取
-      const items = await this.tryLoadCsvViaUrl('datafacts.csv', (line) => {
-        const columns = line.split(',');
-        if (columns.length >= 4) {
-          return {
-            title: columns[1] || '数据真相',
-            content: columns[2] || '',
-            source: columns[3] || '权威数据源',
-            type: columns[4] || 'datafacts',
-            category: columns[5] || 'general',
-            year_start: columns[6] || '',
-            year_end: columns[7] || '',
-            region: columns[8] || 'global',
-            trend: columns[9] || 'improving'
-          };
-        }
-        return null;
-      });
-      return (items || []).filter(item => item && item.content);
-    } catch (error) {
-      this.warn('Failed to load CSV file:', error);
-      return null;
+    if (window.WaitWikiCsvLoader && window.WaitWikiCsvLoader.loadDataFactsFromCSV) {
+      return await window.WaitWikiCsvLoader.loadDataFactsFromCSV();
     }
+    return null;
   }
 
   // 智能预加载策略
@@ -1948,8 +1380,8 @@ class WaitWiki {
   
   // 预加载本地内容到缓存
   preloadLocalContent() {
-    // 仅预加载用户启用的内容类型
-    const localTypes = (this.settings.contentTypes || []).filter(type => !!this.localContent[type]);
+    // 仅预加载用户启用的内容类型（排除 datafacts 与 gathas，改走 CSV）
+    const localTypes = (this.settings.contentTypes || []).filter(type => !!this.localContent[type] && type !== 'datafacts' && type !== 'gathas');
     localTypes.forEach(type => {
       const localCards = this.localContent[type];
       if (localCards && localCards.length > 0) {

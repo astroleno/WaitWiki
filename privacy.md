@@ -71,8 +71,8 @@
 ## 联系我们
 
 如果您对本隐私政策有任何疑问，请通过以下方式联系我们：
-- GitHub Issues：[项目地址]
-- 邮箱：[联系邮箱]
+- GitHub Issues：https://github.com/yourname/WaitWiki
+- 邮箱：support@waitwiki.app
 
 ---
 

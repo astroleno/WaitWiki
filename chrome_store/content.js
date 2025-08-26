@@ -961,16 +961,16 @@ class WaitWiki {
       // 如果本地内容不足，尝试API获取
       if (!cards || cards.length === 0) {
         try {
-      switch (type) {
-        case 'wikipedia':
-          cards = await this.fetchWikipediaCards();
-          break;
-        case 'quotes':
-          cards = await this.fetchQuoteCards();
-          break;
-        case 'facts':
-          cards = await this.fetchFactCards();
-          break;
+          switch (type) {
+            case 'wikipedia':
+              cards = await this.fetchWikipediaCards();
+              break;
+            case 'quotes':
+              cards = await this.fetchQuoteCards();
+              break;
+            case 'facts':
+              cards = await this.fetchFactCards();
+              break;
             case 'advice':
               cards = await this.fetchAdviceCards();
               break;
@@ -988,9 +988,9 @@ class WaitWiki {
               break;
             case 'gathas':
               cards = await this.fetchGathasCards();
-          break;
-        default:
-          break;
+              break;
+            default:
+              break;
           }
         } catch (apiError) {
           console.warn(`API failed for ${type}, using local content:`, apiError);

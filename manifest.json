@@ -33,10 +33,28 @@
     "https://doubao.com/*",
     "https://volcengine.com/*"
   ],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'"
+  },
   "content_scripts": [
     {
-      "matches": ["<all_urls>"],
-      "js": ["content.js"],
+      "matches": [
+        "https://chat.openai.com/*",
+        "https://claude.ai/*",
+        "https://bard.google.com/*",
+        "https://gemini.google.com/*",
+        "https://www.bing.com/*",
+        "https://copilot.microsoft.com/*",
+        "https://chat.deepseek.com/*",
+        "https://grok.x.ai/*",
+        "https://x.ai/*",
+        "https://yuanbao.tencent.com/*",
+        "https://kimi.ai/*",
+        "https://kimi.moonshot.cn/*",
+        "https://doubao.com/*",
+        "https://volcengine.com/*"
+      ],
+      "js": ["endpoints.js", "detectPlatform.js", "localContent.js", "csvLoader.js", "apiClients.js", "contentTypes.js", "content.js"],
       "css": ["styles.css"]
     }
   ],
