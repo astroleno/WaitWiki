@@ -1,0 +1,525 @@
+{
+  "quotes": [
+    {
+      "title": "每日名言",
+      "content": "知识就是力量。",
+      "source": "培根",
+      "type": "quotes"
+    },
+    {
+      "title": "每日名言",
+      "content": "学而不思则罔，思而不学则殆。",
+      "source": "孔子",
+      "type": "quotes"
+    },
+    {
+      "title": "每日名言",
+      "content": "读书破万卷，下笔如有神。",
+      "source": "杜甫",
+      "type": "quotes"
+    },
+    {
+      "title": "每日名言",
+      "content": "业精于勤，荒于嬉；行成于思，毁于随。",
+      "source": "韩愈",
+      "type": "quotes"
+    },
+    {
+      "title": "每日名言",
+      "content": "时间就是金钱。",
+      "source": "富兰克林",
+      "type": "quotes"
+    },
+    {
+      "title": "每日名言",
+      "content": "成功不是偶然的，而是必然的。",
+      "source": "爱默生",
+      "type": "quotes"
+    },
+    {
+      "title": "每日名言",
+      "content": "人生就像一面镜子，你对它笑，它就对你笑。",
+      "source": "萨克雷",
+      "type": "quotes"
+    },
+    {
+      "title": "每日名言",
+      "content": "最困难的时候，也是离成功最近的时候。",
+      "source": "居里夫人",
+      "type": "quotes"
+    },
+    {
+      "title": "每日名言",
+      "content": "天才就是百分之一的灵感加上百分之九十九的汗水。",
+      "source": "爱迪生",
+      "type": "quotes"
+    },
+    {
+      "title": "每日名言",
+      "content": "不要等待机会，而要创造机会。",
+      "source": "乔治·萧伯纳",
+      "type": "quotes"
+    },
+    {
+      "title": "每日名言",
+      "content": "一个人的价值，应该看他贡献什么，而不应当看他取得什么。",
+      "source": "爱因斯坦",
+      "type": "quotes"
+    },
+    {
+      "title": "每日名言",
+      "content": "生活就像一盒巧克力，你永远不知道下一颗是什么味道。",
+      "source": "阿甘正传",
+      "type": "quotes"
+    },
+    {
+      "title": "每日名言",
+      "content": "与其用华丽的外衣装饰自己，不如用知识充实自己。",
+      "source": "莎士比亚",
+      "type": "quotes"
+    },
+    {
+      "title": "每日名言",
+      "content": "成功的关键在于相信自己有能力成功。",
+      "source": "罗伯特·舒勒",
+      "type": "quotes"
+    },
+    {
+      "title": "每日名言",
+      "content": "最大的骄傲于最大的自卑都表示心灵的最软弱无力。",
+      "source": "斯宾诺莎",
+      "type": "quotes"
+    },
+    {
+      "title": "每日名言",
+      "content": "人生不是一支短短的蜡烛，而是一支由我们暂时拿着的火炬。",
+      "source": "萧伯纳",
+      "type": "quotes"
+    },
+    {
+      "title": "每日名言",
+      "content": "理想的人物不仅要在物质需要的满足上，还要在精神旨趣的满足上得到表现。",
+      "source": "黑格尔",
+      "type": "quotes"
+    },
+    {
+      "title": "每日名言",
+      "content": "一个人的真正伟大之处就在于他能够认识到自己的渺小。",
+      "source": "保罗",
+      "type": "quotes"
+    },
+    {
+      "title": "每日名言",
+      "content": "青春是一个短暂的美梦，当你醒来时，它早已消失无踪。",
+      "source": "莎士比亚",
+      "type": "quotes"
+    },
+    {
+      "title": "每日名言",
+      "content": "友谊是一棵可以庇荫的树。",
+      "source": "柯尔律治",
+      "type": "quotes"
+    },
+    {
+      "title": "每日名言",
+      "content": "真正的友谊，是一株成长缓慢的植物。",
+      "source": "华盛顿",
+      "type": "quotes"
+    },
+    {
+      "title": "每日名言",
+      "content": "友谊是灵魂的结合，这个结合是可以离异的，这是两个敏感，正直的人之间心照不宣的契约。",
+      "source": "伏尔泰",
+      "type": "quotes"
+    },
+    {
+      "title": "每日名言",
+      "content": "友谊像清晨的雾一样纯洁，奉承并不能得到友谊，友谊只能用忠实去巩固它。",
+      "source": "马克思",
+      "type": "quotes"
+    },
+    {
+      "title": "每日名言",
+      "content": "友谊是培养人的感情的学校。",
+      "source": "苏霍姆林斯基",
+      "type": "quotes"
+    },
+    {
+      "title": "每日名言",
+      "content": "友谊是天地间最可宝贵的东西，深挚的友谊是人生最大的一种安慰。",
+      "source": "邹韬奋",
+      "type": "quotes"
+    },
+    {
+      "title": "每日名言",
+      "content": "友谊是两颗心真诚相待，而不是一颗心对另一颗心的敲打。",
+      "source": "鲁迅",
+      "type": "quotes"
+    },
+    {
+      "title": "每日名言",
+      "content": "友谊是人生的调味品，也是人生的止痛药。",
+      "source": "爱默生",
+      "type": "quotes"
+    },
+    {
+      "title": "每日名言",
+      "content": "友谊是精神的融合，心灵的联姻，道德的纽结。",
+      "source": "佩恩",
+      "type": "quotes"
+    },
+    {
+      "title": "每日名言",
+      "content": "友谊是不会有感情的破产和快乐的幻灭的。",
+      "source": "巴尔扎克",
+      "type": "quotes"
+    },
+    {
+      "title": "每日名言",
+      "content": "友谊是培养人的感情的学校。我们所以需要友谊，并不是想用它打发时间，而是要在人身上，在自己的身上培养美德。",
+      "source": "苏霍姆林斯基",
+      "type": "quotes"
+    },
+    {
+      "title": "每日名言",
+      "content": "友谊是人生的调味品，也是人生的止痛药。",
+      "source": "爱默生",
+      "type": "quotes"
+    },
+    {
+      "title": "每日名言",
+      "content": "友谊是精神的融合，心灵的联姻，道德的纽结。",
+      "source": "佩恩",
+      "type": "quotes"
+    },
+    {
+      "title": "每日名言",
+      "content": "友谊是不会有感情的破产和快乐的幻灭的。",
+      "source": "巴尔扎克",
+      "type": "quotes"
+    },
+    {
+      "title": "每日名言",
+      "content": "友谊是培养人的感情的学校。我们所以需要友谊，并不是想用它打发时间，而是要在人身上，在自己的身上培养美德。",
+      "source": "苏霍姆林斯基",
+      "type": "quotes"
+    }
+  ],
+  "facts": [
+    {
+      "title": "数字趣闻",
+      "content": "人体大约有206块骨头，但婴儿出生时有300多块骨头。",
+      "source": "人体科学",
+      "type": "facts"
+    },
+    {
+      "title": "数字趣闻",
+      "content": "蜜蜂需要访问约200万朵花才能生产1磅蜂蜜。",
+      "source": "自然科普",
+      "type": "facts"
+    },
+    {
+      "title": "数字趣闻",
+      "content": "地球表面71%被水覆盖，但只有2.5%是淡水。",
+      "source": "地理知识",
+      "type": "facts"
+    },
+    {
+      "title": "数字趣闻",
+      "content": "人类大脑每天产生约7万个想法。",
+      "source": "脑科学",
+      "type": "facts"
+    },
+    {
+      "title": "数字趣闻",
+      "content": "一只蚂蚁可以举起相当于自己体重50倍的物体。",
+      "source": "动物世界",
+      "type": "facts"
+    },
+    {
+      "title": "数字趣闻",
+      "content": "太阳光到达地球需要约8分钟。",
+      "source": "天文知识",
+      "type": "facts"
+    },
+    {
+      "title": "数字趣闻",
+      "content": "人类DNA与黑猩猩DNA的相似度高达98%。",
+      "source": "生物进化",
+      "type": "facts"
+    },
+    {
+      "title": "数字趣闻",
+      "content": "世界上每分钟有约250个婴儿出生。",
+      "source": "人口统计",
+      "type": "facts"
+    }
+  ],
+  "advice": [
+    {
+      "title": "生活小贴士",
+      "content": "每天喝8杯水有助于保持身体健康和皮肤水润。",
+      "source": "健康建议",
+      "type": "advice"
+    },
+    {
+      "title": "生活小贴士",
+      "content": "定期运动30分钟可以显著提升心情和精力。",
+      "source": "运动健康",
+      "type": "advice"
+    },
+    {
+      "title": "生活小贴士",
+      "content": "保持良好睡眠习惯，每晚7-8小时睡眠最佳。",
+      "source": "睡眠科学",
+      "type": "advice"
+    },
+    {
+      "title": "生活小贴士",
+      "content": "多吃蔬菜水果，每天至少5份，营养更均衡。",
+      "source": "营养学",
+      "type": "advice"
+    },
+    {
+      "title": "生活小贴士",
+      "content": "定期整理工作环境，可以提高工作效率和专注力。",
+      "source": "心理学",
+      "type": "advice"
+    },
+    {
+      "title": "生活小贴士",
+      "content": "学会感恩，每天记录3件值得感谢的事情。",
+      "source": "积极心理学",
+      "type": "advice"
+    },
+    {
+      "title": "生活小贴士",
+      "content": "保持好奇心，终身学习是保持大脑活跃的秘诀。",
+      "source": "认知科学",
+      "type": "advice"
+    },
+    {
+      "title": "生活小贴士",
+      "content": "培养一个爱好，让生活更有乐趣和意义。",
+      "source": "生活哲学",
+      "type": "advice"
+    }
+  ],
+  "catfacts": [
+    {
+      "title": "动物趣闻",
+      "content": "猫咪的胡须帮助它们测量空间，判断能否通过狭窄的地方。",
+      "source": "动物行为学",
+      "type": "catfacts"
+    },
+    {
+      "title": "动物趣闻",
+      "content": "猫咪每天睡眠12-16小时，是真正的睡眠专家。",
+      "source": "动物生理学",
+      "type": "catfacts"
+    },
+    {
+      "title": "动物趣闻",
+      "content": "猫咪的嗅觉比人类强14倍，能闻到很远的气味。",
+      "source": "动物感官",
+      "type": "catfacts"
+    },
+    {
+      "title": "动物趣闻",
+      "content": "猫咪的跳跃能力惊人，可以跳到比自己身高5倍的高度。",
+      "source": "动物运动学",
+      "type": "catfacts"
+    },
+    {
+      "title": "动物趣闻",
+      "content": "猫咪的舌头上有倒刺，帮助它们梳理毛发和喝水。",
+      "source": "动物解剖学",
+      "type": "catfacts"
+    },
+    {
+      "title": "动物趣闻",
+      "content": "猫咪的瞳孔会根据光线强度变化，从细缝到圆形。",
+      "source": "动物视觉",
+      "type": "catfacts"
+    },
+    {
+      "title": "动物趣闻",
+      "content": "猫咪的呼噜声频率在20-140赫兹，有助于骨骼愈合。",
+      "source": "动物声学",
+      "type": "catfacts"
+    },
+    {
+      "title": "动物趣闻",
+      "content": "猫咪的尾巴是重要的平衡器官，帮助它们在高处行走。",
+      "source": "动物平衡学",
+      "type": "catfacts"
+    }
+  ],
+  "trivia": [
+    {
+      "title": "知识问答",
+      "content": "问题：世界上最高的山峰是？\n\n答案：珠穆朗玛峰，海拔8848米。",
+      "source": "地理知识",
+      "type": "trivia"
+    },
+    {
+      "title": "知识问答",
+      "content": "问题：人体最大的器官是？\n\n答案：皮肤，成年人的皮肤面积约2平方米。",
+      "source": "人体科学",
+      "type": "trivia"
+    },
+    {
+      "title": "知识问答",
+      "content": "问题：光速是多少？\n\n答案：约30万公里/秒，是宇宙中最快的速度。",
+      "source": "物理学",
+      "type": "trivia"
+    },
+    {
+      "title": "知识问答",
+      "content": "问题：地球绕太阳一周需要多长时间？\n\n答案：365.25天，这就是为什么每4年有一个闰年。",
+      "source": "天文学",
+      "type": "trivia"
+    },
+    {
+      "title": "知识问答",
+      "content": "问题：水的沸点是多少？\n\n答案：100摄氏度（在标准大气压下）。",
+      "source": "化学",
+      "type": "trivia"
+    },
+    {
+      "title": "知识问答",
+      "content": "问题：人类有多少对染色体？\n\n答案：23对，总共46条染色体。",
+      "source": "遗传学",
+      "type": "trivia"
+    },
+    {
+      "title": "知识问答",
+      "content": "问题：世界上最大的海洋是？\n\n答案：太平洋，占地球表面积的46%。",
+      "source": "海洋学",
+      "type": "trivia"
+    },
+    {
+      "title": "知识问答",
+      "content": "问题：植物进行光合作用需要什么？\n\n答案：阳光、二氧化碳和水。",
+      "source": "植物学",
+      "type": "trivia"
+    }
+  ],
+  "cocktails": [
+    {
+      "title": "经典调酒",
+      "content": "配料：伏特加、橙汁\n\n制作方法：将伏特加和橙汁按1:2比例混合，加入冰块摇匀即可。",
+      "source": "调酒艺术",
+      "type": "cocktails"
+    },
+    {
+      "title": "经典调酒",
+      "content": "配料：金酒、汤力水、柠檬片\n\n制作方法：将金酒和汤力水按1:3比例混合，加入柠檬片装饰。",
+      "source": "调酒艺术",
+      "type": "cocktails"
+    },
+    {
+      "title": "经典调酒",
+      "content": "配料：威士忌、苏打水、柠檬\n\n制作方法：将威士忌和苏打水按1:2比例混合，加入柠檬片。",
+      "source": "调酒艺术",
+      "type": "cocktails"
+    },
+    {
+      "title": "经典调酒",
+      "content": "配料：朗姆酒、可乐、柠檬\n\n制作方法：将朗姆酒和可乐按1:3比例混合，加入柠檬片装饰。",
+      "source": "调酒艺术",
+      "type": "cocktails"
+    },
+    {
+      "title": "经典调酒",
+      "content": "配料：龙舌兰、橙汁、红石榴糖浆\n\n制作方法：分层倒入，先橙汁，再红石榴糖浆，最后龙舌兰。",
+      "source": "调酒艺术",
+      "type": "cocktails"
+    },
+    {
+      "title": "经典调酒",
+      "content": "配料：白兰地、柠檬汁、糖浆\n\n制作方法：将三种配料按2:1:1比例混合，加入冰块摇匀。",
+      "source": "调酒艺术",
+      "type": "cocktails"
+    },
+    {
+      "title": "经典调酒",
+      "content": "配料：伏特加、蔓越莓汁、青柠汁\n\n制作方法：将三种配料按2:2:1比例混合，加入冰块摇匀。",
+      "source": "调酒艺术",
+      "type": "cocktails"
+    },
+    {
+      "title": "经典调酒",
+      "content": "配料：金酒、柠檬汁、糖浆、苏打水\n\n制作方法：将金酒、柠檬汁、糖浆混合，最后加入苏打水。",
+      "source": "调酒艺术",
+      "type": "cocktails"
+    }
+  ],
+  "datafacts": [
+    {
+      "title": "数据真相",
+      "content": "全球极端贫困人口比例从1990年的36%下降到2015年的10%，这意味着每天有13.7万人摆脱贫困。",
+      "source": "世界银行数据",
+      "type": "datafacts"
+    },
+    {
+      "title": "数据真相",
+      "content": "全球儿童死亡率从1990年的每1000名活产婴儿93人死亡，下降到2019年的38人，下降了59%。",
+      "source": "联合国儿童基金会",
+      "type": "datafacts"
+    },
+    {
+      "title": "数据真相",
+      "content": "全球手机普及率从2000年的12%增长到2020年的95%，移动通信革命改变了世界。",
+      "source": "国际电信联盟",
+      "type": "datafacts"
+    },
+    {
+      "title": "数据真相",
+      "content": "全球女性平均受教育年限从1970年的3.4年增加到2018年的8.4年，教育性别差距大幅缩小。",
+      "source": "联合国教科文组织",
+      "type": "datafacts"
+    },
+    {
+      "title": "数据真相",
+      "content": "全球可再生能源发电量从2000年的2.8%增长到2020年的29%，清洁能源转型加速。",
+      "source": "国际能源署",
+      "type": "datafacts"
+    },
+    {
+      "title": "数据真相",
+      "content": "全球预期寿命从1960年的52.6岁增长到2019年的72.8岁，人类寿命显著延长。",
+      "source": "世界卫生组织",
+      "type": "datafacts"
+    },
+    {
+      "title": "数据真相",
+      "content": "全球互联网用户比例从2000年的7%增长到2020年的59%，数字鸿沟正在缩小。",
+      "source": "国际电信联盟",
+      "type": "datafacts"
+    },
+    {
+      "title": "数据真相",
+      "content": "全球森林覆盖率从1990年的31.8%下降到2020年的31.2%，但下降速度正在减缓。",
+      "source": "联合国粮农组织",
+      "type": "datafacts"
+    }
+  ],
+  "gathas": [
+    {
+      "type": "gathas",
+      "title": "偈语",
+      "content": "至道无难，唯嫌拣择。",
+      "source": "禅宗偈语"
+    }
+  ],
+  "wikipedia": [
+    {
+      "type": "wikipedia",
+      "title": "为什么晴朗的天空偏蓝？",
+      "content": "阳光进入大气后，会被气体分子向各个方向散射。蓝光的波长较短，比红光散射得更强，因此从天空各处进入眼睛的光多呈蓝色。日落时阳光穿过更厚的大气，蓝光被大量散出视线，余下的红橙光便更明显。",
+      "source": "NASA Space Place（本地概述）",
+      "url": "https://spaceplace.nasa.gov/blue-sky/en/"
+    }
+  ]
+}

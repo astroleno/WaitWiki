@@ -1,46 +1,6 @@
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>知涟 WaitWiki · 设置</title>
-  <link rel="stylesheet" href="gallery/settings.css">
-</head>
-<body>
-  <header><h1>知涟 WaitWiki</h1><p>等待时，读一点有意思的知识。</p></header>
-  <main>
-    <section aria-label="基础设置">
-      <label class="settings-row"><span>启用知涟</span><input type="checkbox" id="enableToggle" checked></label>
-      <label class="settings-row"><span>显示来源信息</span><input type="checkbox" id="showInfoToggle" checked></label>
-      <label class="settings-row"><span>显示圆形入口</span><input type="checkbox" id="showIconToggle" checked></label>
-      <fieldset><legend>展示时长</legend><div class="choices">
-        <label><input type="radio" name="displayDuration" value="10" checked>10 秒</label>
-        <label><input type="radio" name="displayDuration" value="20">20 秒</label>
-        <label><input type="radio" name="displayDuration" value="always">常驻</label>
-      </div></fieldset>
-      <fieldset><legend>纯色阅读界面大小</legend><div class="choices">
-        <label><input type="radio" name="artworkSize" value="small">小</label>
-        <label><input type="radio" name="artworkSize" value="medium" checked>中</label>
-        <label><input type="radio" name="artworkSize" value="large">大</label>
-      </div></fieldset>
-    </section>
-    <section id="gallery-settings" aria-label="空间与光线"></section>
-    <section><h2>内容类型</h2><div class="content-types">
-      <label><input type="checkbox" id="contentType-wikipedia" checked>维基百科</label>
-      <label><input type="checkbox" id="contentType-quotes" checked>名言</label>
-      <label><input type="checkbox" id="contentType-facts" checked>趣闻</label>
-      <label><input type="checkbox" id="contentType-advice" checked>建议</label>
-      <label><input type="checkbox" id="contentType-catfacts" checked>动物</label>
-      <label><input type="checkbox" id="contentType-trivia" checked>问答</label>
-      <label><input type="checkbox" id="contentType-cocktails" checked>调酒</label>
-      <label><input type="checkbox" id="contentType-datafacts" checked>数据真相</label>
-      <label><input type="checkbox" id="contentType-gathas" checked>偈语</label>
-    </div></section>
-  </main>
-  <footer>WaitWiki · <span id="version"></span></footer>
-  <script src="gallery/catalogue.js"></script>
-  <script src="gallery/experience.js"></script>
-  <script src="gallery/settings.js"></script>
-  <script src="popup.js"></script>
-</body>
-</html>
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>知涟 WaitWiki · 设置</title><link rel="stylesheet" href="gallery/styles.css"><link rel="stylesheet" href="gallery/settings.css"></head><body><header><h1>知涟 WaitWiki</h1><p>等一段回答，读一段知识。</p></header><main><section id="settings" aria-label="外观与阅读设置"></section></main><footer><button id="open-settings" type="button">完整设置、收藏与最近</button><a href="privacy.html" target="_blank">隐私说明</a><span id="version"></span><span id="save-status" role="status"></span></footer><script src="gallery/catalogue.js"></script>
+<script src="gallery/experience.js"></script>
+<script src="gallery/reading-state.js"></script><script src="gallery/settings.js"></script>
+<script src="popup.js"></script>
+</body></html>
