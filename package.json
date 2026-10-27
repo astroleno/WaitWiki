@@ -1,0 +1,16 @@
+{
+  "name": "waitwiki",
+  "version": "1.3.0",
+  "private": true,
+  "description": "知涟 WaitWiki — 在 AI 等待中阅读知识",
+  "scripts": {
+    "check": "node scripts/check.js",
+    "test": "node --test tests/gallery.test.js",
+    "build": "node scripts/check.js && python3 scripts/package.py",
+    "package": "python3 scripts/package.py",
+    "preview": "python3 scripts/serve-preview.py"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

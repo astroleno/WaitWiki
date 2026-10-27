@@ -1,11 +1,14 @@
 // WaitWiki Background Script
 // 知涟 WaitWiki - 后台服务
 
-chrome.runtime.onInstalled.addListener(() => {
+importScripts('gallery/catalogue.js', 'gallery/experience.js');
+
+chrome.runtime.onInstalled.addListener(async () => {
   console.log('WaitWiki extension installed');
   
-  // 设置默认设置
-  chrome.storage.sync.set({
+  // Preserve existing preferences, including legacy darkMode, across updates.
+  const existing = await chrome.storage.sync.get(null);
+  const defaults = {
     enabled: true,
     showSourceInfo: true,
     showIcon: true,
@@ -13,8 +16,10 @@ chrome.runtime.onInstalled.addListener(() => {
     cardSize: 'medium',
     displayDuration: '10',
     language: 'zh',
-            contentTypes: ['wikipedia', 'quotes', 'facts', 'advice', 'catfacts', 'trivia', 'cocktails', 'datafacts', 'gathas']
-  });
+    contentTypes: ['wikipedia', 'quotes', 'facts', 'advice', 'catfacts', 'trivia', 'cocktails', 'datafacts', 'gathas'],
+    ...GalleryExperience.preferences(existing, 'reading')
+  };
+  await chrome.storage.sync.set(Object.fromEntries(Object.entries(defaults).filter(([key]) => existing[key] === undefined)));
 });
 
 // 监听来自content script的消息
@@ -28,7 +33,8 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       'cardSize',
       'displayDuration',
       'language',
-      'contentTypes'
+      'contentTypes',
+      ...GalleryExperience.KEYS
     ], (result) => {
       sendResponse(result);
     });

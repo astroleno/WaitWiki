@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "知涟 WaitWiki",
-  "version": "1.0.0",
+  "version": "1.3.0",
   "description": "等待，不是浪费，而是遇见知识的涟漪。",
   "permissions": [
     "activeTab",
@@ -18,6 +18,7 @@
     "https://catfact.ninja/*",
     "https://the-trivia-api.com/*",
     "https://www.thecocktaildb.com/*",
+    "https://chatgpt.com/*",
     "https://chat.openai.com/*",
     "https://claude.ai/*",
     "https://bard.google.com/*",
@@ -26,24 +27,76 @@
     "https://copilot.microsoft.com/*",
     "https://chat.deepseek.com/*",
     "https://grok.x.ai/*",
+    "https://grok.com/*",
     "https://x.ai/*",
+    "https://x.com/i/grok*",
+    "https://x.com/grok*",
     "https://yuanbao.tencent.com/*",
-    "https://kimi.ai/*",
+    "https://*.kimi.ai/*",
     "https://kimi.moonshot.cn/*",
-    "https://doubao.com/*",
-    "https://volcengine.com/*"
+    "https://*.doubao.com/*",
+    "https://*.volcengine.com/*"
   ],
   "content_scripts": [
     {
-      "matches": ["<all_urls>"],
-      "js": ["content.js"],
-      "css": ["styles.css"]
+      "matches": [
+        "https://chatgpt.com/*",
+        "https://chat.openai.com/*",
+        "https://claude.ai/*",
+        "https://bard.google.com/*",
+        "https://gemini.google.com/*",
+        "https://www.bing.com/*",
+        "https://copilot.microsoft.com/*",
+        "https://chat.deepseek.com/*",
+        "https://grok.x.ai/*",
+        "https://grok.com/*",
+        "https://x.ai/*",
+        "https://x.com/i/grok*",
+        "https://x.com/grok*",
+        "https://yuanbao.tencent.com/*",
+        "https://*.kimi.ai/*",
+        "https://kimi.moonshot.cn/*",
+        "https://*.doubao.com/*",
+        "https://*.volcengine.com/*"
+      ],
+      "js": [
+        "gallery/catalogue.js",
+        "gallery/experience.js",
+        "content.js"
+      ],
+      "css": [
+        "styles.css",
+        "gallery/styles.css"
+      ]
     }
   ],
   "web_accessible_resources": [
     {
-      "resources": ["gathas.csv", "icons/*", "data/*", "datafacts.csv", "gathas.csv"],
-      "matches": ["<all_urls>"]
+      "resources": [
+        "icons/*",
+        "gathas.csv",
+        "datafacts.csv",
+        "gallery/images/*.webp"
+      ],
+      "matches": [
+        "https://chatgpt.com/*",
+        "https://chat.openai.com/*",
+        "https://claude.ai/*",
+        "https://bard.google.com/*",
+        "https://gemini.google.com/*",
+        "https://www.bing.com/*",
+        "https://copilot.microsoft.com/*",
+        "https://chat.deepseek.com/*",
+        "https://grok.x.ai/*",
+        "https://grok.com/*",
+        "https://x.ai/*",
+        "https://x.com/*",
+        "https://yuanbao.tencent.com/*",
+        "https://*.kimi.ai/*",
+        "https://kimi.moonshot.cn/*",
+        "https://*.doubao.com/*",
+        "https://*.volcengine.com/*"
+      ]
     }
   ],
   "icons": {

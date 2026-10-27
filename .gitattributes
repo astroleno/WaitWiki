@@ -1,0 +1,2 @@
+# Preserve the original checkout's CRLF while checking actual trailing spaces.
+* whitespace=trailing-space,space-before-tab,cr-at-eol

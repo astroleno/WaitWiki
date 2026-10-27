@@ -25,7 +25,8 @@ class WaitWiki {
       cardSize: 'medium', 
       language: 'zh',
       contentTypes: ['wikipedia', 'quotes', 'facts', 'advice', 'catfacts', 'trivia', 'cocktails', 'datafacts', 'gathas'],
-      displayDuration: '10'
+      displayDuration: '10',
+      ...GalleryExperience.preferences({}, 'reading')
     };
 
     // 缓存配置
@@ -327,7 +328,7 @@ class WaitWiki {
       },
     };
 
-    this.init();
+    this.ready = this.init();
   }
 
   async init() {
@@ -450,7 +451,7 @@ class WaitWiki {
   }
 
   async loadSettings() {
-    const data = await chrome.storage.sync.get(['enabled', 'showSourceInfo', 'showIcon', 'darkMode', 'cardSize', 'language', 'contentTypes']);
+    const data = await chrome.storage.sync.get(['enabled', 'showSourceInfo', 'showIcon', 'darkMode', 'cardSize', 'language', 'contentTypes', ...GalleryExperience.KEYS]);
     this.settings.enabled = data.enabled !== false;
     this.settings.showSourceInfo = data.showSourceInfo !== false;
     this.settings.showIcon = data.showIcon !== false;
@@ -458,6 +459,7 @@ class WaitWiki {
     this.settings.cardSize = data.cardSize || 'medium';
     this.settings.language = data.language || 'zh';
     this.settings.contentTypes = data.contentTypes || ['wikipedia', 'quotes', 'facts'];
+    Object.assign(this.settings, GalleryExperience.preferences(data, 'reading'));
   }
 
   async loadDisplayDuration() {
@@ -638,14 +640,13 @@ class WaitWiki {
   }
 
   showPopup() {
+    if (!this.settings.enabled) return;
+    if (this.isShowingCard) this.hideCard();
+    this.currentCard = null;
     this.onConversationStart();
     
     // 增加点击计数
     this.batchUpdateConfig.clickCount++;
-    
-    // 每次显示popup时，强制获取新卡片
-    this.currentCard = null; // 清除当前卡片
-    this.showCard(true); // 强制显示新卡片
     
     // 检查缓存状态和更新条件
     const cacheSize = this.cachedCards.size;
@@ -671,6 +672,7 @@ class WaitWiki {
     }
     
     // 根据设置决定是否自动隐藏
+    clearTimeout(this.hideTimer);
     if (this.settings.displayDuration !== 'always') {
       const duration = parseInt(this.settings.displayDuration) * 1000;
       
@@ -762,7 +764,9 @@ class WaitWiki {
     document.body.appendChild(container);
 
     // Circular Icon
-    const icon = document.createElement('div');
+    const icon = document.createElement('button');
+    icon.type = 'button';
+    icon.setAttribute('aria-label', '打开知涟阅读');
     icon.id = 'waitwiki-circular-icon';
     const iconImg = document.createElement('img');
     iconImg.className = 'waitwiki-icon-image';
@@ -771,6 +775,8 @@ class WaitWiki {
     icon.appendChild(iconImg);
     document.body.appendChild(icon);
     this.ui.icon = icon;
+    this.gallery = new GalleryExperience.Stage({ container, frame, kind: 'reading', close: () => this.hideCard() });
+    window.addEventListener('pagehide', event => { if (!event.persisted) this.gallery.destroy(); });
   }
 
   setupEventListeners() {
@@ -784,7 +790,8 @@ class WaitWiki {
     });
 
     // 监听存储变更
-    chrome.storage.onChanged.addListener((changes) => {
+    chrome.storage.onChanged.addListener((changes, area) => {
+      if (area !== 'sync') return;
       try {
         Object.keys(changes).forEach(key => {
           if (this.settings.hasOwnProperty(key)) this.settings[key] = changes[key].newValue;
@@ -825,11 +832,12 @@ class WaitWiki {
   }
   
   applySettings() {
+    Object.assign(this.settings, GalleryExperience.preferences(this.settings, 'reading'));
     if (!this.settings.enabled) {
       this.hideCard();
       this.hideCircularIcon();
     } else {
-      if (this.settings.showIcon) {
+      if (this.settings.showIcon && !this.isShowingCard) {
         this.showCircularIcon();
       } else {
         this.hideCircularIcon();
@@ -877,9 +885,12 @@ class WaitWiki {
   }
 
   hideCard() {
+    clearTimeout(this.hideTimer);
+    this.conversationState = 'idle';
     this.isShowingCard = false;
     this.isLoadingCard = false;
     this.ui.container.classList.remove('waitwiki-show');
+    document.removeEventListener('click', this.boundOutsideClickHandler);
     if (this.settings.enabled && this.settings.showIcon) {
       this.showCircularIcon();
     }
@@ -896,7 +907,7 @@ class WaitWiki {
 
   handleOutsideClick(event) {
     if (this.ui.container.contains(event.target) || this.ui.icon.contains(event.target)) {
-      setTimeout(() => this.bindOutsideClickHandler(), 0);
+      if (this.isShowingCard) this.bindOutsideClickHandler();
       return;
     }
     this.hideCard();
@@ -1614,11 +1625,13 @@ class WaitWiki {
     this.ui.title.textContent = this.currentCard.title;
     this.ui.content.textContent = this.currentCard.content;
     
-    if (this.currentCard.url) {
+    const sourceURL = GalleryExperience.safeURL(this.currentCard.url);
+    if (sourceURL) {
       // 安全地创建链接元素，避免XSS攻击
       const link = document.createElement('a');
-      link.href = this.currentCard.url;
+      link.href = sourceURL;
       link.target = '_blank';
+      link.rel = 'noopener noreferrer';
       link.textContent = `来源：${this.currentCard.source}`;
       this.ui.source.innerHTML = '';
       this.ui.source.appendChild(link);
@@ -1627,6 +1640,7 @@ class WaitWiki {
     }
     
     this.updateSourceInfoVisibility();
+    this.gallery.updateContent(this.currentCard);
     
     // 隐藏加载器，显示内容
     this.ui.loader.style.opacity = '0';
@@ -1897,11 +1911,7 @@ class WaitWiki {
   }
 
   applyDarkMode() {
-    if (this.settings.darkMode) {
-      document.body.classList.add('waitwiki-dark-mode');
-    } else {
-      document.body.classList.remove('waitwiki-dark-mode');
-    }
+    this.gallery.apply(this.settings);
     
     if (this.settings.enabled && this.settings.showIcon && !this.isShowingCard) {
       this.showCircularIcon();
