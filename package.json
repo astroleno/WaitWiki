@@ -1,6 +1,6 @@
 {
   "name": "waitwiki",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "private": true,
   "description": "知涟 WaitWiki — 在 AI 等待中阅读知识",
   "scripts": {
